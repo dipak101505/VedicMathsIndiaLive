@@ -5,11 +5,9 @@ import { CreateTableCommand, DescribeTableCommand, ListTablesCommand, DeleteTabl
 
 // AWS Configuration
 const awsConfig = {
-  region: 'ap-southeast-1', // Singapore region
-  credentials: {
-    accessKeyId: 'AKIASVLKCUXEEDKC7QXF',
-    secretAccessKey: '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',
-  }
+  region: 'us-east-1',
+  accessKeyId: process.env.REACT_APP_AWS_ACCESS_KEY_ID || '',
+  secretAccessKey: process.env.REACT_APP_AWS_SECRET_ACCESS_KEY || '',
 };
 
 // Initialize DynamoDB client
