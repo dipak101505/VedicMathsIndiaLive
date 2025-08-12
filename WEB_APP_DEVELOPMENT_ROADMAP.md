@@ -12,49 +12,44 @@ Building a web application with four distinct user types, each having access to 
 
 ## Phase 1: Project Setup & Dependencies
 
-### 1.1 TypeScript Configuration
+### 1.1 JavaScript Configuration
 ```json
-// tsconfig.json
+// package.json dependencies
 {
-  "compilerOptions": {
-    "target": "ES2020",
-    "lib": ["dom", "dom.iterable", "es6"],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "noFallthroughCasesInSwitch": true,
-    "module": "esnext",
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
-    "jsx": "react-jsx",
-    "baseUrl": "src",
-    "paths": {
-      "@/*": ["*"],
-      "@/components/*": ["components/*"],
-      "@/pages/*": ["pages/*"],
-      "@/types/*": ["types/*"],
-      "@/utils/*": ["utils/*"]
-    }
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.8.0",
+    "styled-components": "^5.3.0",
+    "@mui/material": "^5.11.0",
+    "@mui/icons-material": "^5.11.0",
+    "@emotion/react": "^11.10.0",
+    "@emotion/styled": "^11.10.0",
+    "firebase": "^9.17.0",
+    "react-hook-form": "^7.43.0",
+    "yup": "^1.0.0",
+    "@hookform/resolvers": "^2.9.0",
+    "react-hot-toast": "^2.4.0",
+    "zustand": "^4.3.0"
   },
-  "include": ["src"],
-  "exclude": ["node_modules"]
+  "devDependencies": {
+    "@vitejs/plugin-react": "^3.1.0",
+    "vite": "^4.1.0",
+    "eslint": "^8.35.0",
+    "eslint-plugin-react": "^7.32.0",
+    "eslint-plugin-react-hooks": "^4.6.0"
+  }
 }
 ```
 
 ### 1.2 Install Required Dependencies
 ```bash
 npm install react-router-dom styled-components @mui/material @mui/icons-material @emotion/react @emotion/styled
-npm install @reduxjs/toolkit react-redux
+npm install zustand
 npm install firebase
 npm install react-hook-form yup @hookform/resolvers
 npm install react-hot-toast
-npm install --save-dev typescript @types/react @types/react-dom @types/node
-npm install --save-dev @typescript-eslint/eslint-plugin @typescript-eslint/parser
+npm install --save-dev @vitejs/plugin-react vite eslint eslint-plugin-react eslint-plugin-react-hooks
 ```
 
 ### 1.3 Project Structure Setup
@@ -62,72 +57,66 @@ npm install --save-dev @typescript-eslint/eslint-plugin @typescript-eslint/parse
 src/
 ├── components/
 │   ├── layout/
-│   │   ├── Sidebar.tsx
-│   │   ├── Header.tsx
-│   │   ├── MainLayout.tsx
-│   │   └── ProtectedRoute.tsx
+│   │   ├── Sidebar.jsx
+│   │   ├── Header.jsx
+│   │   ├── MainLayout.jsx
+│   │   └── ProtectedRoute.jsx
 │   ├── common/
-│   │   ├── Button.tsx
-│   │   ├── Card.tsx
-│   │   ├── Modal.tsx
-│   │   └── Loading.tsx
+│   │   ├── Button.jsx
+│   │   ├── Card.jsx
+│   │   ├── Modal.jsx
+│   │   └── Loading.jsx
 │   └── forms/
-│       ├── LoginForm.tsx
-│       └── RegistrationForm.tsx
+│       ├── LoginForm.jsx
+│       └── RegistrationForm.jsx
 ├── pages/
 │   ├── auth/
-│   │   ├── LoginPage.tsx
-│   │   └── RegisterPage.tsx
+│   │   ├── LoginPage.jsx
+│   │   └── RegisterPage.jsx
 │   ├── dashboard/
-│   │   ├── AdminDashboard.tsx
-│   │   ├── InstructorDashboard.tsx
-│   │   ├── StudentDashboard.tsx
-│   │   └── ParentDashboard.tsx
+│   │   ├── AdminDashboard.jsx
+│   │   ├── InstructorDashboard.jsx
+│   │   ├── StudentDashboard.jsx
+│   │   └── ParentDashboard.jsx
 │   └── modules/
 │       ├── courses/
 │       ├── users/
 │       ├── analytics/
 │       └── settings/
 ├── store/
-│   ├── index.ts
-│   ├── authSlice.ts
-│   ├── userSlice.ts
-│   └── appSlice.ts
+│   ├── authStore.js
+│   ├── userStore.js
+│   └── appStore.js
 ├── hooks/
-│   ├── useAuth.ts
-│   ├── usePermissions.ts
-│   └── useAppDispatch.ts
+│   ├── useAuth.js
+│   ├── usePermissions.js
+│   └── useStore.js
 ├── services/
-│   ├── firebase.ts
-│   ├── lambdaService.ts
-│   └── userService.ts
-├── types/
-│   ├── auth.types.ts
-│   ├── user.types.ts
-│   ├── course.types.ts
-│   └── common.types.ts
+│   ├── firebase.js
+│   ├── lambdaService.js
+│   └── userService.js
 ├── utils/
-│   ├── constants.ts
-│   ├── permissions.ts
-│   └── helpers.ts
+│   ├── constants.js
+│   ├── permissions.js
+│   └── helpers.js
 └── styles/
-    ├── theme.ts
-    ├── globalStyles.ts
+    ├── theme.js
+    ├── globalStyles.js
     └── components/
 ```
 
 ## Phase 2: Core Infrastructure
 
 ### 2.1 Backend Architecture Setup
-- **AWS Lambda Functions**: Serverless backend for business logic
+- **AWS Lambda Functions**: Serverless backend for business logic with Function URLs
 - **DynamoDB Tables**: User management, courses, enrollments, analytics
-- **API Gateway**: RESTful endpoints with authentication
+- **Lambda Function URLs**: Direct HTTP endpoints for each Lambda function
 - **Firebase Integration**: Authentication and real-time features
 - **IAM Roles**: Secure access to AWS services
 
 ### 2.2 Authentication & Authorization System
 - **Firebase Auth**: User authentication with email/password, Google, etc.
-- **Redux Auth Slice**: Authentication state management
+- **Zustand Auth Store**: Authentication state management
 - **ProtectedRoute**: Route protection based on user roles
 - **Permission System**: Module access control based on user type
 - **Firebase Token Management**: Secure authentication flow
@@ -252,7 +241,7 @@ src/
 - [ ] Setup Firebase project and configuration
 - [ ] Create DynamoDB tables and schemas
 - [ ] Setup AWS Lambda functions structure
-- [ ] Create Redux store with auth slice
+- [ ] Create Zustand stores with auth store
 - [ ] Implement Firebase authentication
 - [ ] Create ProtectedRoute component
 
@@ -266,7 +255,7 @@ src/
 - [ ] Create user CRUD operations with Lambda functions
 - [ ] Implement DynamoDB operations for users
 - [ ] Create user dashboard templates
-- [ ] Setup Redux user slice
+- [ ] Setup Zustand user store
 - [ ] Implement role-based permissions
 
 ### Step 5: Core Modules (Week 5-6)
@@ -283,12 +272,12 @@ src/
 
 ## Phase 6: Technical Considerations
 
-### 6.1 TypeScript Best Practices & Coding Standards
+### 6.1 JavaScript Best Practices & Coding Standards
 - **File Naming**: Use PascalCase for components, camelCase for utilities
 - **Component Structure**: 
-  ```tsx
+  ```jsx
   // ✅ Good
-  const ComponentName: React.FC<ComponentProps> = ({ prop1, prop2 }) => {
+  const ComponentName = ({ prop1, prop2 }) => {
     // component logic
     return <div>{/* JSX */}</div>;
   };
@@ -299,14 +288,8 @@ src/
   }
   ```
 
-- **Type Definitions**: 
-  - Define interfaces in separate `.types.ts` files
-  - Use union types for variants: `type ButtonVariant = 'primary' | 'secondary'`
-  - Prefer interfaces over types for object shapes
-  - Use generics for reusable components
-
 - **Import/Export Patterns**:
-  ```tsx
+  ```jsx
   // ✅ Good - Named exports
   export const Component = () => <div />;
   export { Component };
@@ -316,11 +299,17 @@ src/
   export default PageComponent;
   ```
 
-- **Props Interface Naming**: Always suffix with `Props`
-  ```tsx
-  interface ButtonProps { /* ... */ }
-  interface CardProps { /* ... */ }
-  interface UserTableProps { /* ... */ }
+- **Props Destructuring**: Always destructure props for clarity
+  ```jsx
+  // ✅ Good
+  const Button = ({ variant, size, children, onClick }) => {
+    return <button onClick={onClick}>{children}</button>;
+  };
+
+  // ❌ Avoid
+  const Button = (props) => {
+    return <button onClick={props.onClick}>{props.children}</button>;
+  };
   ```
 
 ### 6.2 Component Architecture & Layout
@@ -343,63 +332,47 @@ src/
 - **Component Reusability**: Common components can be used across different pages
 - **Layout Consistency**: All pages inherit the same layout structure
 
-### 6.2 TypeScript Types & Interfaces
-- **User Types**:
-  ```typescript
-  interface User {
-    id: string;
-    email: string;
-    role: UserRole;
-    franchiseId?: string;
-    profile: UserProfile;
-    createdAt: Date;
-    updatedAt: Date;
-  }
+### 6.2 State Management with Zustand
+- **Store Structure**:
+  ```javascript
+  // store/authStore.js
+  import { create } from 'zustand';
 
-  type UserRole = 'super_admin' | 'franchise_admin' | 'instructor' | 'student' | 'parent';
-
-  interface UserProfile {
-    firstName: string;
-    lastName: string;
-    avatar?: string;
-    phone?: string;
-    address?: Address;
-  }
+  export const useAuthStore = create((set, get) => ({
+    user: null,
+    isAuthenticated: false,
+    loading: false,
+    error: null,
+    
+    setUser: (user) => set({ user, isAuthenticated: !!user }),
+    setLoading: (loading) => set({ loading }),
+    setError: (error) => set({ error }),
+    logout: () => set({ user: null, isAuthenticated: false }),
+  }));
   ```
 
-- **Component Props Types**:
-  ```typescript
-  interface ButtonProps {
-    variant?: 'primary' | 'secondary' | 'outline';
-    size?: 'small' | 'medium' | 'large';
-    disabled?: boolean;
-    onClick?: () => void;
-    children: React.ReactNode;
-  }
+- **User Store Example**:
+  ```javascript
+  // store/userStore.js
+  import { create } from 'zustand';
 
-  interface CardProps {
-    title: string;
-    subtitle?: string;
-    actions?: React.ReactNode;
-    children: React.ReactNode;
-    className?: string;
-  }
-  ```
-
-- **Redux State Types**:
-  ```typescript
-  interface RootState {
-    auth: AuthState;
-    user: UserState;
-    app: AppState;
-  }
-
-  interface AuthState {
-    user: User | null;
-    isAuthenticated: boolean;
-    loading: boolean;
-    error: string | null;
-  }
+  export const useUserStore = create((set, get) => ({
+    users: [],
+    selectedUser: null,
+    loading: false,
+    
+    fetchUsers: async () => {
+      set({ loading: true });
+      try {
+        const users = await userService.getUsers();
+        set({ users, loading: false });
+      } catch (error) {
+        set({ error, loading: false });
+      }
+    },
+    
+    selectUser: (user) => set({ selectedUser: user }),
+  }));
   ```
 
 ### 6.3 Backend Architecture
@@ -408,41 +381,64 @@ src/
   - Courses: course_id, title, description, instructor_id, franchise_id
   - Enrollments: enrollment_id, user_id, course_id, status, progress
   - Analytics: user_id, metrics, timestamps
-- **Lambda Functions**:
-  - User management (CRUD operations)
-  - Course management
-  - Enrollment processing
-  - Analytics aggregation
-  - Permission validation
-- **API Gateway**: Rate limiting, CORS, authentication middleware
+- **Lambda Functions with Function URLs**:
+  - User management (CRUD operations) - `/users`
+  - Course management - `/courses`
+  - Enrollment processing - `/enrollments`
+  - Analytics aggregation - `/analytics`
+  - Permission validation - `/auth`
+- **Lambda Function URLs**: Direct HTTP endpoints with built-in CORS and authentication
+
+### 6.4 Lambda Function URLs Configuration
+- **Function URL Structure**:
+  ```
+  https://[function-id].lambda-url.[region].on.aws/
+  ```
+- **Benefits over API Gateway**:
+  - Lower cost (no API Gateway charges)
+  - Simpler deployment and management
+  - Built-in CORS support
+  - Direct Lambda invocation
+  - Faster response times
+- **Security Features**:
+  - IAM-based authentication
+  - Resource-based policies
+  - Cross-origin resource sharing (CORS)
+  - HTTPS enforcement
+- **Configuration Options**:
+  - Auth type: NONE, AWS_IAM
+  - CORS settings for cross-origin requests
+  - Invoke mode: BUFFERED, RESPONSE_STREAM
 
 ### 6.2 State Management
-- Redux Toolkit for global state management
-- RTK Query for server state and API calls
+- Zustand for global state management
+- React Context API for theme and app-wide settings
 - Local state for component-specific data
 - Firebase real-time listeners for live updates
 
 ### 6.2 API Design
-- AWS Lambda functions for business logic
+- AWS Lambda functions with Function URLs for business logic
 - DynamoDB for data persistence
-- API Gateway for endpoint management
+- Lambda Function URLs for direct HTTP endpoint access
 - Role-based access control
-- Rate limiting and security
+- Built-in CORS and authentication
 - Error handling and validation
 
-### 6.4 Security Measures
+### 6.5 Security Measures
 - Firebase token validation
 - AWS IAM roles and policies
 - Role-based route protection
 - Input validation and sanitization
 - XSS and CSRF protection
 - DynamoDB encryption at rest
+- Lambda Function URL authentication and authorization
 
-### 6.5 Performance Optimization
+### 6.6 Performance Optimization
 - Code splitting and lazy loading
 - Memoization for expensive operations
 - Image optimization
 - Caching strategies
+- Lambda Function URL response optimization
 
 ## Phase 7: Testing Strategy
 
@@ -487,15 +483,15 @@ src/
 ## Component Usage Examples
 
 ### Example 1: Dashboard Page
-```tsx
-// pages/dashboard/AdminDashboard.tsx
+```jsx
+// pages/dashboard/AdminDashboard.jsx
 import React from 'react';
 import { PageHeader } from '@/components/common/PageHeader';
 import { StatsCard } from '@/components/common/StatsCard';
 import { CreateUserButton } from '@/components/common/CreateUserButton';
 import { RecentActivityTable } from '@/components/dashboard/RecentActivityTable';
 
-const AdminDashboard: React.FC = () => {
+const AdminDashboard = () => {
   return (
     <div>
       <PageHeader 
@@ -516,8 +512,8 @@ export default AdminDashboard;
 ```
 
 ### Example 2: User Management Page
-```tsx
-// pages/modules/users/UserManagementPage.tsx
+```jsx
+// pages/modules/users/UserManagementPage.jsx
 import React from 'react';
 import { PageHeader } from '@/components/common/PageHeader';
 import { AddUserButton } from '@/components/users/AddUserButton';
@@ -525,7 +521,7 @@ import { UserFilters } from '@/components/users/UserFilters';
 import { UserTable } from '@/components/users/UserTable';
 import { Pagination } from '@/components/common/Pagination';
 
-const UserManagementPage: React.FC = () => {
+const UserManagementPage = () => {
   return (
     <div>
       <PageHeader 
@@ -543,17 +539,13 @@ export default UserManagementPage;
 ```
 
 ### Example 3: MainLayout Implementation
-```tsx
-// components/layout/MainLayout.tsx
+```jsx
+// components/layout/MainLayout.jsx
 import React from 'react';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 
-interface MainLayoutProps {
-  children: React.ReactNode;
-}
-
-const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
+const MainLayout = ({ children }) => {
   return (
     <div className="app-layout">
       <Sidebar />
@@ -570,6 +562,87 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 export default MainLayout;
 ```
 
+### Example 4: Zustand Store Usage
+```jsx
+// hooks/useAuth.js
+import { useAuthStore } from '@/store/authStore';
+
+export const useAuth = () => {
+  const { user, isAuthenticated, loading, error, setUser, logout } = useAuthStore();
+  
+  const login = async (email, password) => {
+    try {
+      const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
+      setUser(userCredential.user);
+    } catch (error) {
+      console.error('Login error:', error);
+    }
+  };
+  
+  return {
+    user,
+    isAuthenticated,
+    loading,
+    error,
+    login,
+    logout,
+  };
+};
+```
+
+### Example 5: Lambda Function URL Service
+```jsx
+// services/lambdaService.js
+const LAMBDA_BASE_URL = 'https://[function-id].lambda-url.[region].on.aws';
+
+export const lambdaService = {
+  // User management
+  async getUsers() {
+    const response = await fetch(`${LAMBDA_BASE_URL}/users`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${await getFirebaseToken()}`,
+      },
+    });
+    return response.json();
+  },
+
+  async createUser(userData) {
+    const response = await fetch(`${LAMBDA_BASE_URL}/users`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${await getFirebaseToken()}`,
+      },
+      body: JSON.stringify(userData),
+    });
+    return response.json();
+  },
+
+  // Course management
+  async getCourses() {
+    const response = await fetch(`${LAMBDA_BASE_URL}/courses`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${await getFirebaseToken()}`,
+      },
+    });
+    return response.json();
+  },
+
+  // Helper function to get Firebase token
+  async getFirebaseToken() {
+    const user = firebase.auth().currentUser;
+    if (user) {
+      return await user.getIdToken();
+    }
+    return null;
+  },
+};
+```
+
 ## Next Steps
 
 1. Review and approve this roadmap
@@ -582,4 +655,4 @@ export default MainLayout;
 
 **Estimated Timeline**: 8-10 weeks for MVP
 **Team Size**: 1-2 developers recommended
-**Technology Stack**: React 19 + TypeScript, React Router, Styled Components, Material-UI, Redux Toolkit, Firebase, AWS Lambda, DynamoDB
+**Technology Stack**: React 18 + JavaScript, React Router, Styled Components, Material-UI, Zustand, Firebase, AWS Lambda Function URLs, DynamoDB
