@@ -14,6 +14,13 @@ import {
   MenuItem,
   ListItemSecondaryAction,
   IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  ListItemAvatar,
+  Badge,
 } from '@mui/material';
 import {
   Dashboard as DashboardIcon,
@@ -56,6 +63,7 @@ const Sidebar = () => {
   const [expandedLearners, setExpandedLearners] = useState(true);
   const [demoRole, setDemoRole] = useState(null);
   const [accountMenuAnchor, setAccountMenuAnchor] = useState(null);
+  const [notificationModalOpen, setNotificationModalOpen] = useState(false);
 
   // Get demo role from localStorage and listen for changes
   useEffect(() => {
@@ -108,6 +116,44 @@ const Sidebar = () => {
     { id: 1, name: 'Liam Smith', initial: 'L', path: '/learner/liam-smith' },
     { id: 2, name: 'Emma Williams', initial: 'E', path: '/learner/emma-williams' },
   ];
+
+  // Mock notifications data
+  const mockNotifications = [
+    {
+      id: 1,
+      title: 'New Course Available',
+      message: 'Advanced Vedic Mathematics course is now available for enrollment.',
+      time: '2 hours ago',
+      type: 'course',
+      read: false,
+    },
+    {
+      id: 2,
+      title: 'Payment Received',
+      message: 'Your payment of ₹2,500 has been received successfully.',
+      time: '1 day ago',
+      type: 'payment',
+      read: true,
+    },
+    {
+      id: 3,
+      title: 'Session Reminder',
+      message: 'You have a scheduled session tomorrow at 10:00 AM.',
+      time: '2 days ago',
+      type: 'reminder',
+      read: true,
+    },
+    {
+      id: 4,
+      title: 'Assignment Due',
+      message: 'Your mathematics assignment is due in 3 days.',
+      time: '3 days ago',
+      type: 'assignment',
+      read: false,
+    },
+  ];
+
+  const unreadCount = mockNotifications.filter(notification => !notification.read).length;
 
   // Role-based menu items
   const getMenuItems = () => {
@@ -199,7 +245,49 @@ const Sidebar = () => {
     navigate('/login');
   };
 
+  const handleNotificationClick = () => {
+    setNotificationModalOpen(true);
+  };
+
+  const handleNotificationModalClose = () => {
+    setNotificationModalOpen(false);
+  };
+
   const renderMenuItem = (item, index) => {
+    // Special handling for notification items
+    if (item.text === 'Notifications') {
+      return (
+        <ListItem key={item.text} disablePadding>
+          <ListItemButton 
+            onClick={handleNotificationClick}
+            sx={{
+              mx: 1,
+              mb: 0.5,
+              borderRadius: 1,
+              '&:hover': {
+                backgroundColor: 'rgba(255,255,255,0.1)',
+              },
+            }}
+          >
+            <ListItemIcon sx={{ color: 'white', minWidth: 40 }}>
+              <Badge badgeContent={unreadCount} color="error">
+                {item.icon}
+              </Badge>
+            </ListItemIcon>
+            <ListItemText 
+              primary={item.text} 
+              sx={{ 
+                color: 'white',
+                '& .MuiTypography-root': {
+                  fontWeight: 500,
+                }
+              }}
+            />
+          </ListItemButton>
+        </ListItem>
+      );
+    }
+
     if (item.hasSubItems) {
       return (
         <React.Fragment key={item.text}>
@@ -472,6 +560,163 @@ const Sidebar = () => {
           </MenuItem>
         </Menu>
       </Box>
+
+      {/* Notification Modal */}
+      <Dialog
+        open={notificationModalOpen}
+        onClose={handleNotificationModalClose}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 2,
+            backgroundColor: '#1a1a2e',
+            color: 'white',
+            border: '1px solid rgba(255,255,255,0.2)',
+          },
+        }}
+      >
+        <DialogTitle sx={{ 
+          borderBottom: '1px solid rgba(255,255,255,0.2)',
+          pb: 2,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1
+        }}>
+          <NotificationsIcon sx={{ color: 'primary.main' }} />
+          Notifications
+          {unreadCount > 0 && (
+            <Badge 
+              badgeContent={unreadCount} 
+              color="error" 
+              sx={{ ml: 1 }}
+            />
+          )}
+        </DialogTitle>
+        
+        <DialogContent sx={{ pt: 2, pb: 1 }}>
+          {mockNotifications.length === 0 ? (
+            <Box sx={{ textAlign: 'center', py: 4 }}>
+              <NotificationsIcon sx={{ fontSize: 48, color: 'rgba(255,255,255,0.3)', mb: 2 }} />
+              <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+                No notifications yet
+              </Typography>
+            </Box>
+          ) : (
+            <List sx={{ p: 0 }}>
+              {mockNotifications.map((notification) => (
+                <ListItem 
+                  key={notification.id} 
+                  sx={{ 
+                    px: 0, 
+                    py: 1,
+                    borderBottom: '1px solid rgba(255,255,255,0.1)',
+                    '&:last-child': { borderBottom: 'none' }
+                  }}
+                >
+                  <ListItemAvatar>
+                    <Avatar 
+                      sx={{ 
+                        width: 40, 
+                        height: 40, 
+                        bgcolor: notification.read ? 'rgba(255,255,255,0.1)' : 'primary.main',
+                        color: notification.read ? 'rgba(255,255,255,0.7)' : 'white'
+                      }}
+                    >
+                      {notification.type === 'course' && <SchoolIcon />}
+                      {notification.type === 'payment' && <MoneyIcon />}
+                      {notification.type === 'reminder' && <CalendarIcon />}
+                      {notification.type === 'assignment' && <BookIcon />}
+                    </Avatar>
+                  </ListItemAvatar>
+                  
+                  <ListItemText
+                    primary={
+                      <Typography 
+                        variant="subtitle2" 
+                        sx={{ 
+                          fontWeight: notification.read ? 400 : 600,
+                          color: notification.read ? 'rgba(255,255,255,0.8)' : 'white'
+                        }}
+                      >
+                        {notification.title}
+                      </Typography>
+                    }
+                    secondary={
+                      <Box>
+                        <Typography 
+                          variant="body2" 
+                          sx={{ 
+                            color: 'rgba(255,255,255,0.7)',
+                            mb: 0.5
+                          }}
+                        >
+                          {notification.message}
+                        </Typography>
+                        <Typography 
+                          variant="caption" 
+                          sx={{ 
+                            color: 'rgba(255,255,255,0.5)',
+                            fontSize: '0.75rem'
+                          }}
+                        >
+                          {notification.time}
+                        </Typography>
+                      </Box>
+                    }
+                  />
+                  
+                  {!notification.read && (
+                    <Box 
+                      sx={{ 
+                        width: 8, 
+                        height: 8, 
+                        borderRadius: '50%', 
+                        bgcolor: 'primary.main',
+                        ml: 1
+                      }} 
+                    />
+                  )}
+                </ListItem>
+              ))}
+            </List>
+          )}
+        </DialogContent>
+        
+        <DialogActions sx={{ 
+          borderTop: '1px solid rgba(255,255,255,0.2)',
+          pt: 2,
+          px: 3,
+          pb: 2
+        }}>
+          <Button 
+            onClick={handleNotificationModalClose}
+            variant="outlined"
+            sx={{ 
+              color: 'white',
+              borderColor: 'rgba(255,255,255,0.3)',
+              '&:hover': {
+                borderColor: 'rgba(255,255,255,0.5)',
+                backgroundColor: 'rgba(255,255,255,0.05)',
+              }
+            }}
+          >
+            Close
+          </Button>
+          <Button 
+            variant="contained"
+            sx={{ 
+              bgcolor: 'primary.main',
+              color: 'white',
+              '&:hover': {
+                bgcolor: 'primary.dark',
+              }
+            }}
+          >
+            Mark All as Read
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

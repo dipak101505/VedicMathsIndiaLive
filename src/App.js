@@ -11,6 +11,9 @@ import ProtectedRoute from './components/layout/ProtectedRoute';
 import MainLayout from './components/layout/MainLayout';
 import Dashboard from './pages/dashboard/Dashboard';
 import StudentCourses from './pages/modules/StudentCourses';
+import CourseDetailPage from './pages/modules/CourseDetailPage';
+import FeesPage from './pages/modules/FeesPage';
+import ChatsPage from './pages/modules/ChatsPage';
 
 // Import providers
 import AuthProvider from './components/providers/AuthProvider';
@@ -69,13 +72,15 @@ function App() {
                   
                   {/* Student Routes */}
                   <Route path="/my-courses" element={<StudentCourses />} />
+                  <Route path="/course/:courseId" element={<CourseDetailPage />} />
                   <Route path="/courses" element={<Dashboard />} />
                   <Route path="/activity" element={<Dashboard />} />
-                  <Route path="/fees" element={<Dashboard />} />
-                  <Route path="/chats" element={<Dashboard />} />
+                  <Route path="/fees" element={<FeesPage />} />
+                  <Route path="/chats" element={<ChatsPage />} />
                   <Route path="/notifications" element={<Dashboard />} />
                   
                   {/* Parent Routes */}
+                  <Route path="/fees" element={<FeesPage />} />
                   <Route path="/my-learners" element={<Dashboard />} />
                   <Route path="/learner/:learnerId" element={<Dashboard />} />
                   
@@ -86,7 +91,7 @@ function App() {
                   <Route path="/working-hours" element={<Dashboard />} />
                   <Route path="/leaves" element={<Dashboard />} />
                   <Route path="/session-conflicts" element={<Dashboard />} />
-                  <Route path="/chats" element={<Dashboard />} />
+                  <Route path="/chats" element={<ChatsPage />} />
                   <Route path="/notifications" element={<Dashboard />} />
                   
                   {/* Admin Routes */}
@@ -98,7 +103,7 @@ function App() {
                   <Route path="/recorded-courses" element={<Dashboard />} />
                   <Route path="/instructors" element={<Dashboard />} />
                   <Route path="/learners" element={<Dashboard />} />
-                  <Route path="/chats" element={<Dashboard />} />
+                  <Route path="/chats" element={<ChatsPage />} />
                   <Route path="/store" element={<Dashboard />} />
                   <Route path="/analytics" element={<Dashboard />} />
                   <Route path="/finance" element={<Dashboard />} />

@@ -10,17 +10,67 @@ const awsConfig = {
   secretAccessKey: process.env.REACT_APP_AWS_SECRET_ACCESS_KEY || '',
 };
 
+// Validate credentials before using them
+const hasValidCredentials = awsConfig.accessKeyId && 
+                          awsConfig.secretAccessKey && 
+                          awsConfig.accessKeyId.length > 0 && 
+                          awsConfig.secretAccessKey.length > 0;
+
+// Debug: Log environment variables (remove in production)
+console.log('🔍 Environment check:', {
+  accessKeyId: process.env.REACT_APP_AWS_ACCESS_KEY_ID ? '✅ Set' : '❌ Not set',
+  secretAccessKey: process.env.REACT_APP_AWS_SECRET_ACCESS_KEY ? '✅ Set' : '❌ Not set',
+  testVar: process.env.REACT_APP_TEST_VAR || '❌ Not set',
+  region: awsConfig.region,
+  nodeEnv: process.env.NODE_ENV,
+  allEnvVars: Object.keys(process.env).filter(key => key.startsWith('REACT_APP_'))
+});
+
 // Initialize DynamoDB client
 let dynamoClient;
 let dynamoDocClient;
 
 try {
-  // Initialize DynamoDB client with provided credentials
-  dynamoClient = new DynamoDBClient(awsConfig);
-  dynamoDocClient = DynamoDBDocumentClient.from(dynamoClient);
-  console.log('✅ DynamoDB client initialized with credentials for ap-southeast-1 region');
+  // Only initialize if credentials are provided and valid
+  if (hasValidCredentials) {
+    console.log('🔧 Creating DynamoDB client with credentials...');
+    console.log('🔍 Credential details:', {
+      accessKeyId: awsConfig.accessKeyId.substring(0, 8) + '...',
+      secretAccessKey: awsConfig.secretAccessKey.substring(0, 8) + '...',
+      region: awsConfig.region
+    });
+    
+    // Create client with explicit credential configuration
+    const clientConfig = {
+      region: awsConfig.region,
+      credentials: {
+        accessKeyId: awsConfig.accessKeyId,
+        secretAccessKey: awsConfig.secretAccessKey
+      }
+    };
+    
+    dynamoClient = new DynamoDBClient(clientConfig);
+    dynamoDocClient = DynamoDBDocumentClient.from(dynamoClient);
+    console.log('✅ DynamoDB client initialized with credentials for ap-southeast-1 region');
+  } else {
+    console.log('ℹ️ DynamoDB: No valid AWS credentials provided, will use Lambda service fallback');
+    console.log('🔍 Credential validation:', {
+      hasAccessKey: !!awsConfig.accessKeyId,
+      hasSecretKey: !!awsConfig.secretAccessKey,
+      accessKeyLength: awsConfig.accessKeyId?.length || 0,
+      secretKeyLength: awsConfig.secretAccessKey?.length || 0,
+      isValid: hasValidCredentials
+    });
+    dynamoDocClient = null;
+  }
 } catch (error) {
   console.error('❌ Error initializing DynamoDB client:', error);
+  console.error('🔍 Error details:', {
+    message: error.message,
+    name: error.name,
+    stack: error.stack
+  });
+  dynamoDocClient = null;
 }
 
 // Table names
@@ -356,6 +406,10 @@ class DynamoDBUserService {
     this.tableName = TABLES.USERS;
     this.hasDirectAccess = !!dynamoDocClient;
     this.tableManager = new DynamoDBTableManager();
+    
+    if (!this.hasDirectAccess) {
+      console.log('ℹ️ DynamoDB: No direct access available, will use Lambda service fallback');
+    }
   }
 
   // Initialize service - create table if needed

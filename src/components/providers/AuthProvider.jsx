@@ -33,6 +33,7 @@ const AuthProvider = ({ children }) => {
             const existingUser = await dynamoDBUserService.getUser(firebaseUser.uid);
             
             if (existingUser.success && existingUser.user) {
+              debugger;
               setUser(existingUser.user);
               
               // Set auth token for Lambda service
