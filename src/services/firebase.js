@@ -2,6 +2,7 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
 import { getAnalytics } from 'firebase/analytics';
+import { getFirebaseErrorMessage } from '../utils/errorMessages';
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -92,7 +93,8 @@ export const firebaseAuth = {
       return { success: true, user: userCredential.user };
     } catch (error) {
       console.error('❌ Firebase signIn error:', error);
-      return { success: false, error: error.message };
+      const userFriendlyError = getFirebaseErrorMessage(error.code);
+      return { success: false, error: userFriendlyError };
     }
   },
 
@@ -110,7 +112,8 @@ export const firebaseAuth = {
       return { success: true, user: userCredential.user };
     } catch (error) {
       console.error('❌ Firebase signUp error:', error);
-      return { success: false, error: error.message };
+      const userFriendlyError = getFirebaseErrorMessage(error.code);
+      return { success: false, error: userFriendlyError };
     }
   },
 

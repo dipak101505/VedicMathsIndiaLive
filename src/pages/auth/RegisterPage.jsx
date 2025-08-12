@@ -37,20 +37,16 @@ const RegisterPage = () => {
   const { register, loading, error } = useAuth();
   const navigate = useNavigate();
   
-  // Log component initialization
+  // Component lifecycle management
   useEffect(() => {
-    console.log('🔐 RegisterPage component mounted');
-    console.log('🔑 Auth hook state:', { loading, error });
-    
     return () => {
-      console.log('🔐 RegisterPage component unmounting');
+      // Cleanup on unmount
     };
   }, [loading, error]);
   
   const handleChange = (e) => {
     try {
       const { name, value } = e.target;
-      console.log('📝 Form field change:', { name, value });
       
       setFormData(prev => ({
         ...prev,
@@ -72,7 +68,6 @@ const RegisterPage = () => {
   
   const validateForm = () => {
     try {
-      console.log('✅ Validating form data:', { ...formData, password: '***', confirmPassword: '***' });
       const newErrors = {};
       
       // First Name validation
@@ -101,23 +96,15 @@ const RegisterPage = () => {
         newErrors.password = 'Password is required';
       } else if (formData.password.length < 6) {
         newErrors.password = 'Password must be at least 6 characters';
-      } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password)) {
-        newErrors.password = 'Password must contain at least one uppercase letter, one lowercase letter, and one number';
       }
       
       // Confirm Password validation
-      if (!formData.confirmPassword) {
+      if (!formData.password) {
         newErrors.confirmPassword = 'Please confirm your password';
       } else if (formData.password !== formData.confirmPassword) {
         newErrors.confirmPassword = 'Passwords do not match';
       }
       
-      // Phone validation (optional)
-      if (formData.phone && !/^[\+]?[1-9][\d]{0,15}$/.test(formData.phone.replace(/\s/g, ''))) {
-        newErrors.phone = 'Phone number is invalid';
-      }
-      
-      console.log('🔍 Validation errors:', newErrors);
       setErrors(newErrors);
       return Object.keys(newErrors).length === 0;
     } catch (error) {
@@ -130,52 +117,27 @@ const RegisterPage = () => {
   const handleSubmit = async (event) => {
     try {
       event.preventDefault();
-      console.log('🚀 Registration form submission started');
       
       if (!validateForm()) {
-        console.log('❌ Form validation failed');
         return;
       }
       
-      // Prepare user data for registration
       const userData = {
-        displayName: `${formData.firstName} ${formData.lastName}`,
         firstName: formData.firstName.trim(),
         lastName: formData.lastName.trim(),
-        email: formData.email.toLowerCase().trim(),
+        email: formData.email.trim(),
         role: formData.role,
-        phone: formData.phone.trim() || null,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        isActive: true,
-        emailVerified: false,
-        lastLoginAt: null,
-        preferences: {
-          notifications: true,
-          theme: 'light',
-          language: 'en'
-        }
+        phone: formData.phone.trim(),
       };
-      
-      console.log('🔐 Attempting registration with:', { 
-        email: userData.email, 
-        password: '***',
-        userData: { ...userData, email: userData.email }
-      });
       
       const result = await register(formData.email, formData.password, userData);
       
       if (result.success) {
-        console.log('✅ Registration successful, navigating to dashboard');
-        toast.success('Registration successful! Welcome to Vedic Maths India.');
-        navigate('/dashboard', { replace: true });
-      } else {
-        console.log('❌ Registration failed:', result.error);
-        // Error will be displayed by the auth hook
+        navigate('/dashboard');
       }
     } catch (error) {
       console.error('❌ Error in handleSubmit:', error);
-      setComponentError('Form submission error: ' + error.message);
+      setComponentError('Form submission error');
     }
   };
 

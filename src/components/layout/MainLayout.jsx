@@ -1,58 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Drawer, AppBar, Toolbar, IconButton, Typography } from '@mui/material';
+import React from 'react';
+import { Box, Drawer } from '@mui/material';
 import { Outlet } from 'react-router-dom';
-import MenuIcon from '@mui/icons-material/Menu';
 import Sidebar from './Sidebar';
-import Header from './Header';
 
 const drawerWidth = 240;
 
 const MainLayout = () => {
-  const [mobileOpen, setMobileOpen] = useState(false);
-
-  // Debug logging
-  useEffect(() => {
-    console.log('🏗️ MainLayout: Component mounted');
-    console.log('🏗️ MainLayout: Using Outlet for children');
-    
-    return () => {
-      console.log('🏗️ MainLayout: Component unmounting');
-    };
-  }, []);
-
-  const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
-  };
-
   try {
     const drawer = <Sidebar />;
 
-    console.log('🏗️ MainLayout: Rendering with Outlet');
-
     return (
       <Box sx={{ display: 'flex' }}>
-        {/* App Bar */}
-        <AppBar
-          position="fixed"
-          sx={{
-            width: { md: `calc(100% - ${drawerWidth}px)` },
-            ml: { md: `${drawerWidth}px` },
-          }}
-        >
-          <Toolbar>
-            <IconButton
-              color="inherit"
-              aria-label="open drawer"
-              edge="start"
-              onClick={handleDrawerToggle}
-              sx={{ mr: 2, display: { md: 'none' } }}
-            >
-              <MenuIcon />
-            </IconButton>
-            <Header />
-          </Toolbar>
-        </AppBar>
-
         {/* Sidebar */}
         <Box
           component="nav"
@@ -61,14 +19,18 @@ const MainLayout = () => {
           {/* Mobile drawer */}
           <Drawer
             variant="temporary"
-            open={mobileOpen}
-            onClose={handleDrawerToggle}
+            open={false}
             ModalProps={{
               keepMounted: true, // Better open performance on mobile.
             }}
             sx={{
               display: { xs: 'block', md: 'none' },
-              '& .MuiDrawer-paper': { boxSizing: 'box-sizing', width: drawerWidth },
+              '& .MuiDrawer-paper': { 
+                boxSizing: 'box-sizing', 
+                width: drawerWidth,
+                backgroundColor: '#1a1a2e', // Dark blue/charcoal background
+                border: 'none',
+              },
             }}
           >
             {drawer}
@@ -79,7 +41,13 @@ const MainLayout = () => {
             variant="permanent"
             sx={{
               display: { xs: 'none', md: 'block' },
-              '& .MuiDrawer-paper': { boxSizing: 'box-sizing', width: drawerWidth },
+              '& .MuiDrawer-paper': { 
+                boxSizing: 'box-sizing', 
+                width: drawerWidth,
+                backgroundColor: '#1a1a2e', // Dark blue/charcoal background
+                border: 'none',
+                boxShadow: '2px 0 8px rgba(0,0,0,0.3)',
+              },
             }}
             open
           >
@@ -94,14 +62,10 @@ const MainLayout = () => {
             flexGrow: 1,
             p: 3,
             width: { md: `calc(100% - ${drawerWidth}px)` },
-            mt: '64px', // App bar height
+            minHeight: '100vh',
+            backgroundColor: '#f5f5f5', // Light background for content area
           }}
         >
-          <div style={{ background: 'lightblue', padding: '5px', margin: '5px' }}>
-            MainLayout Active - Outlet should render children below
-            <br />
-            Using React Router Outlet for nested routes
-          </div>
           <Outlet />
         </Box>
       </Box>
@@ -110,12 +74,11 @@ const MainLayout = () => {
     console.error('❌ MainLayout: Error rendering component:', error);
     return (
       <Box sx={{ p: 3 }}>
-        <div style={{ background: 'red', padding: '10px', margin: '10px' }}>
+        <div style={{ color: 'red', fontSize: '1.5rem', fontWeight: 'bold' }}>
           MainLayout Error
         </div>
-        <Typography variant="h4" color="error">MainLayout Error</Typography>
-        <Typography>An error occurred while rendering the layout.</Typography>
-        <Typography variant="body2">Error: {error.message}</Typography>
+        <div>An error occurred while rendering the layout.</div>
+        <div style={{ fontSize: '0.875rem' }}>Error: {error.message}</div>
       </Box>
     );
   }

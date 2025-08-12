@@ -16,6 +16,8 @@ import {
 } from '@mui/material';
 import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import { useAuthStore } from '../../store/authStore';
+import { getFirebaseErrorMessage, handleFirebaseError } from '../../utils/errorMessages';
 import Button from '../../components/common/Button';
 import toast from 'react-hot-toast';
 
@@ -40,24 +42,16 @@ const LoginPage = () => {
   
   const from = location.state?.from?.pathname || '/dashboard';
   
-  // Log component initialization
+  // Component lifecycle management
   useEffect(() => {
-    console.log('🔐 LoginPage component mounted');
-    console.log('📍 Current location:', location.pathname);
-    console.log('🎯 Redirect target:', from);
-    
-    // Check if auth hook is working
-    console.log('🔑 Auth hook state:', { loading, error });
-    
     return () => {
-      console.log('🔐 LoginPage component unmounting');
+      // Cleanup on unmount
     };
-  }, [location.pathname, from, loading, error]);
-  
+  }, [loading, error]);
+
   const handleChange = (e) => {
     try {
       const { name, value } = e.target;
-      console.log('📝 Form field change:', { name, value });
       
       setFormData(prev => ({
         ...prev,
@@ -79,20 +73,19 @@ const LoginPage = () => {
   
   const validateForm = () => {
     try {
-      console.log('✅ Validating form data:', formData);
       const newErrors = {};
       
-      if (!formData.email) {
+      // Email validation
+      if (!formData.email.trim()) {
         newErrors.email = 'Email is required';
       } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
         newErrors.email = 'Email is invalid';
       }
-      
+      // Password validation
       if (!formData.password) {
         newErrors.password = 'Password is required';
       }
       
-      console.log('🔍 Validation errors:', newErrors);
       setErrors(newErrors);
       return Object.keys(newErrors).length === 0;
     } catch (error) {
@@ -105,21 +98,15 @@ const LoginPage = () => {
   const handleSubmit = async (event) => {
     try {
       event.preventDefault();
-      console.log('🚀 Form submission started');
       
       if (!validateForm()) {
-        console.log('❌ Form validation failed');
         return;
       }
       
-      console.log('🔐 Attempting login with:', { email: formData.email, password: '***' });
       const result = await login(formData.email, formData.password);
       
       if (result.success) {
-        console.log('✅ Login successful, navigating to:', from);
         navigate(from, { replace: true });
-      } else {
-        console.log('❌ Login failed:', result.error);
       }
     } catch (error) {
       console.error('❌ Error in handleSubmit:', error);
@@ -130,10 +117,7 @@ const LoginPage = () => {
   // Test Firebase auth functionality
   const testFirebaseAuth = async () => {
     try {
-      console.log('🧪 Testing Firebase auth functionality...');
-      
       const { auth } = await import('../../services/firebase');
-      console.log('✅ Auth import successful:', auth);
       
       if (!auth) {
         throw new Error('Auth instance is null');
@@ -144,7 +128,6 @@ const LoginPage = () => {
         throw new Error('Auth instance missing onAuthStateChanged method');
       }
       
-      console.log('✅ Firebase auth test passed');
       return true;
       
     } catch (error) {
@@ -187,19 +170,14 @@ const LoginPage = () => {
   // Check if user exists in Firebase
   const checkUserExists = async (email) => {
     try {
-      console.log('🔍 Checking if user exists in Firebase:', email);
-      
       const { auth } = await import('../../services/firebase');
       const { fetchSignInMethodsForEmail } = await import('firebase/auth');
       
       const methods = await fetchSignInMethodsForEmail(auth, email);
-      console.log('🔍 Sign-in methods for email:', methods);
       
       if (methods.length > 0) {
-        console.log('✅ User exists in Firebase with methods:', methods);
         return true;
       } else {
-        console.log('❌ User does not exist in Firebase');
         return false;
       }
       
@@ -216,7 +194,6 @@ const LoginPage = () => {
       }
 
       setResetLoading(true);
-      console.log('🔐 Attempting password reset for:', resetEmail);
 
       // First check if user exists
       const userExists = await checkUserExists(resetEmail.trim());
@@ -231,31 +208,23 @@ const LoginPage = () => {
       const { auth } = await import('../../services/firebase');
       const { sendPasswordResetEmail } = await import('firebase/auth');
 
-      console.log('📧 Firebase auth imported successfully');
-      console.log('📧 Auth instance:', auth);
-      console.log('📧 Reset email:', resetEmail.trim());
-
       // Check if auth is properly initialized
       if (!auth) {
         throw new Error('Firebase auth not initialized');
       }
 
       // Send password reset email with additional error handling
-      console.log('📧 About to send password reset email...');
       
       try {
         const result = await sendPasswordResetEmail(auth, resetEmail.trim());
-        console.log('📧 Password reset email result:', result);
-        console.log('📧 Result type:', typeof result);
-        console.log('📧 Result keys:', result ? Object.keys(result) : 'No keys');
       } catch (sendError) {
         console.error('❌ Error in sendPasswordResetEmail:', sendError);
         throw sendError;
       }
       
-      console.log('✅ Password reset email sent successfully');
+      // If we get here, the email was sent successfully
       setResetSuccess(true);
-      toast.success('Password reset email sent! Check your inbox.');
+      setResetEmailError('');
       
       // Auto-close after 3 seconds
       setTimeout(() => {
@@ -271,34 +240,9 @@ const LoginPage = () => {
         name: error.name
       });
       
-      let errorMessage = 'Failed to send password reset email';
-      
-      // Handle specific Firebase auth errors
-      switch (error.code) {
-        case 'auth/user-not-found':
-          errorMessage = 'No account found with this email address';
-          break;
-        case 'auth/invalid-email':
-          errorMessage = 'Invalid email address';
-          break;
-        case 'auth/too-many-requests':
-          errorMessage = 'Too many requests. Please try again later.';
-          break;
-        case 'auth/network-request-failed':
-          errorMessage = 'Network error. Please check your internet connection.';
-          break;
-        case 'auth/operation-not-allowed':
-          errorMessage = 'Password reset is not enabled for this project.';
-          break;
-        case 'auth/unauthorized-continue-uri':
-          errorMessage = 'Unauthorized continue URI. Please contact support.';
-          break;
-        default:
-          errorMessage = error.message || 'An unexpected error occurred';
-      }
-      
+      // Use centralized error handling utility
+      const errorMessage = handleFirebaseError(error, toast.error, 'Failed to send password reset email');
       setResetEmailError(errorMessage);
-      toast.error(errorMessage);
     } finally {
       setResetLoading(false);
     }
@@ -376,14 +320,21 @@ const LoginPage = () => {
               
               {/* Forgot Password Link */}
               <Box sx={{ textAlign: 'right', mt: 1 }}>
-                <Link
-                  component="button"
+                <Typography
+                  component="span"
                   variant="body2"
                   onClick={handleForgotPasswordOpen}
-                  sx={{ cursor: 'pointer' }}
+                  sx={{ 
+                    cursor: 'pointer',
+                    color: 'primary.main',
+                    textDecoration: 'underline',
+                    '&:hover': {
+                      color: 'primary.dark'
+                    }
+                  }}
                 >
                   Forgot password?
-                </Link>
+                </Typography>
               </Box>
               
               <Button
