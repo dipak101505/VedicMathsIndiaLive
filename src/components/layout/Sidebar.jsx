@@ -343,25 +343,27 @@ const Sidebar = () => {
             sx={{
               width: 40,
               height: 40,
-              backgroundColor: '#8B4513',
               borderRadius: 1,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               mr: 1,
-              border: '2px solid white',
+              overflow: 'hidden',
             }}
           >
-            <Typography variant="h6" sx={{ color: 'white', fontWeight: 'bold' }}>
-              A
-            </Typography>
+            <img
+              src="https://vedicmathsindia.org/wp-content/uploads/2018/06/cropped-C_Users_Riju-Pramanik_AppData_Local_Packages_Microsoft.SkypeApp_kzf8qxf38zg5c_LocalState_8c3fc180-bbe9-41d7-ac56-a944a5fc4067-32x32.png"
+              alt="Vedic Maths India"
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+              }}
+            />
           </Box>
           <Box>
             <Typography variant="subtitle1" sx={{ color: 'white', fontWeight: 'bold', lineHeight: 1.2 }}>
-              Vedic Maths
-            </Typography>
-            <Typography variant="subtitle2" sx={{ color: 'white', lineHeight: 1.2 }}>
-              India
+              Vedic Maths India
             </Typography>
           </Box>
         </Box>
