@@ -5,7 +5,7 @@ import { CreateTableCommand, DescribeTableCommand, ListTablesCommand, DeleteTabl
 
 // AWS Configuration
 const awsConfig = {
-  region: 'us-east-1',
+  region: 'ap-southeast-1',
   accessKeyId: process.env.REACT_APP_AWS_ACCESS_KEY_ID || '',
   secretAccessKey: process.env.REACT_APP_AWS_SECRET_ACCESS_KEY || '',
 };
