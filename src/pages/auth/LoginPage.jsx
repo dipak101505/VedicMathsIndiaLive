@@ -28,6 +28,7 @@ const LoginPage = () => {
   });
   const [errors, setErrors] = useState({});
   const [componentError, setComponentError] = useState(null);
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
   
   // Forgot password state
   const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
@@ -46,6 +47,7 @@ const LoginPage = () => {
   useEffect(() => {
     return () => {
       // Cleanup on unmount
+      setIsAuthenticating(false);
     };
   }, [loading, error]);
 
@@ -103,14 +105,78 @@ const LoginPage = () => {
         return;
       }
       
+      console.log('🔐 LoginPage: Starting authentication process');
+      setIsAuthenticating(true);
+      
+      // Add a timeout to prevent infinite loading
+      const authTimeout = setTimeout(() => {
+        if (isAuthenticating) {
+          console.error('❌ Authentication timeout after 10 seconds');
+          setComponentError('Authentication is taking longer than expected. Please try again.');
+          toast.error('Authentication timeout. Please try again.');
+          setIsAuthenticating(false);
+        }
+      }, 10000); // 10 second timeout
+      
       const result = await login(formData.email, formData.password);
+      console.log('🔐 LoginPage: Login result:', result);
       
       if (result.success) {
-        navigate(from, { replace: true });
+        console.log('🔐 LoginPage: Login successful, waiting for auth state update');
+        // Wait for the authentication state to be properly set
+        // This prevents the race condition where navigation happens before auth state is updated
+        let attempts = 0;
+        const maxAttempts = 50; // 5 seconds max wait time
+        
+        const checkAuthState = () => {
+          attempts++;
+          const { isAuthenticated, user } = useAuthStore.getState();
+          
+          console.log(`🔍 Auth state check attempt ${attempts}:`, { isAuthenticated, hasUser: !!user });
+          
+          if (isAuthenticated && user) {
+            clearTimeout(authTimeout);
+            setIsAuthenticating(false);
+            console.log('✅ Authentication state confirmed, navigating to:', from);
+            navigate(from, { replace: true });
+          } else if (attempts < maxAttempts) {
+            // Check again after a short delay
+            setTimeout(checkAuthState, 100);
+          } else {
+            // Timeout reached, show error and let user try again
+            console.error('❌ Authentication state update timeout after', maxAttempts, 'attempts');
+            clearTimeout(authTimeout);
+            setComponentError('Login successful but authentication state update timed out. Please try logging in again.');
+            toast.error('Authentication timeout. Please try again.');
+            setIsAuthenticating(false);
+          }
+        };
+        
+        // Start checking auth state
+        checkAuthState();
+        
+        // Fallback: If auth state checking takes too long, try direct navigation
+        // This handles edge cases where the state update might be delayed
+        setTimeout(() => {
+          if (isAuthenticating) {
+            const { isAuthenticated, user } = useAuthStore.getState();
+            if (isAuthenticated && user) {
+              console.log('🔄 Fallback: Direct navigation after timeout');
+              clearTimeout(authTimeout);
+              setIsAuthenticating(false);
+              navigate(from, { replace: true });
+            }
+          }
+        }, 3000); // 3 second fallback
+      } else {
+        console.log('🔐 LoginPage: Login failed:', result.error);
+        clearTimeout(authTimeout);
+        setIsAuthenticating(false);
       }
     } catch (error) {
       console.error('❌ Error in handleSubmit:', error);
       setComponentError('Form submission error');
+      setIsAuthenticating(false);
     }
   };
 
@@ -341,11 +407,21 @@ const LoginPage = () => {
                 type="submit"
                 fullWidth
                 variant="contained"
-                loading={loading}
+                loading={loading || isAuthenticating}
                 sx={{ mt: 3, mb: 2 }}
               >
                 Sign In
               </Button>
+              
+              {/* Authentication Progress Indicator */}
+              {isAuthenticating && (
+                <Box sx={{ textAlign: 'center', mt: 2 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    🔐 Setting up your session...
+                  </Typography>
+                </Box>
+              )}
+              
               <Box sx={{ textAlign: 'center' }}>
                 <Link component={RouterLink} to="/register" variant="body2">
                   {"Don't have an account? Sign Up"}

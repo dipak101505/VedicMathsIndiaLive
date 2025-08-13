@@ -29,23 +29,28 @@ const AuthProvider = ({ children }) => {
       const unsubscribe = firebaseAuth.onAuthStateChanged(async (firebaseUser) => {
         if (firebaseUser) {
           try {
+            console.log('🔐 AuthProvider: Firebase user authenticated:', firebaseUser.uid);
+            setLoading(true);
+            
             // Check if user data already exists in DynamoDB
             const existingUser = await dynamoDBUserService.getUser(firebaseUser.uid);
             
             if (existingUser.success && existingUser.user) {
-              debugger;
+              console.log('✅ AuthProvider: User data found in DynamoDB:', existingUser.user);
               setUser(existingUser.user);
               
               // Set auth token for Lambda service
               try {
                 const token = await firebaseUser.getIdToken();
                 lambdaService.setAuthToken(token);
+                console.log('✅ AuthProvider: Auth token set for Lambda service');
               } catch (tokenError) {
                 console.warn('⚠️ AuthProvider: Failed to get auth token:', tokenError);
               }
               
               toast.success('Welcome back!');
             } else {
+              console.log('ℹ️ AuthProvider: Creating new user profile for:', firebaseUser.uid);
               // Create new user profile
               const userData = {
                 uid: firebaseUser.uid,
@@ -73,18 +78,30 @@ const AuthProvider = ({ children }) => {
               try {
                 const token = await firebaseUser.getIdToken();
                 lambdaService.setAuthToken(token);
+                console.log('✅ AuthProvider: Auth token set for Lambda service');
               } catch (tokenError) {
                 console.warn('⚠️ AuthProvider: Failed to get auth token:', tokenError);
               }
               
               toast.success('Welcome back!');
-              
             }
           } catch (error) {
             console.error('❌ AuthProvider: Error setting up user profile:', error);
             setError('Failed to load user data');
+            // Even if user data loading fails, we should still set the basic Firebase user
+            // to prevent login loops
+            const basicUser = {
+              uid: firebaseUser.uid,
+              email: firebaseUser.email,
+              role: 'student',
+              isActive: true
+            };
+            setUser(basicUser);
+          } finally {
+            setLoading(false);
           }
         } else {
+          console.log('🔐 AuthProvider: Firebase user signed out');
           setUser(null);
           lambdaService.setAuthToken(null);
         }

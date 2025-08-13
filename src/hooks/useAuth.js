@@ -38,7 +38,17 @@ export const useAuth = () => {
       
       if (result.success) {
         console.log('✅ useAuth: Login successful for:', email);
-        // User will be set by the AuthProvider auth state listener
+        
+        // Immediately set a temporary authenticated state to prevent navigation issues
+        // This will be updated with full user data by the AuthProvider
+        const tempUser = {
+          uid: result.user.uid,
+          email: result.user.email,
+          role: 'student', // Default role until full data loads
+          isActive: true
+        };
+        setUser(tempUser);
+        
         toast.success('Login successful!');
         return { success: true };
       } else {
@@ -56,7 +66,7 @@ export const useAuth = () => {
     } finally {
       setLoading(false);
     }
-  }, [setLoading, setError]);
+  }, [setLoading, setError, setUser]);
 
   // Register function
   const register = useCallback(async (email, password, userData) => {
