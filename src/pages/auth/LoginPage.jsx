@@ -132,16 +132,17 @@ const LoginPage = () => {
           attempts++;
           const { isAuthenticated, user } = useAuthStore.getState();
           
-          console.log(`🔍 Auth state check attempt ${attempts}:`, { isAuthenticated, hasUser: !!user });
+          console.log(`🔍 Auth state check attempt ${attempts}:`, { isAuthenticated, hasUser: !!user, userRole: user?.role });
           
-          if (isAuthenticated && user) {
+          // Wait for user to have a real role (not 'loading')
+          if (isAuthenticated && user && user.role !== 'loading') {
             clearTimeout(authTimeout);
             setIsAuthenticating(false);
-            console.log('✅ Authentication state confirmed, navigating to:', from);
+            console.log('✅ Authentication state confirmed with role:', user.role, 'navigating to:', from);
             navigate(from, { replace: true });
           } else if (attempts < maxAttempts) {
             // Check again after a short delay
-            setTimeout(checkAuthState, 100);
+            setTimeout(checkAuthState, 50); // Reduced from 100ms to 50ms
           } else {
             // Timeout reached, show error and let user try again
             console.error('❌ Authentication state update timeout after', maxAttempts, 'attempts');
@@ -152,7 +153,7 @@ const LoginPage = () => {
           }
         };
         
-        // Start checking auth state
+        // Check auth state immediately since we're fetching user data in useAuth
         checkAuthState();
         
         // Fallback: If auth state checking takes too long, try direct navigation
@@ -160,8 +161,8 @@ const LoginPage = () => {
         setTimeout(() => {
           if (isAuthenticating) {
             const { isAuthenticated, user } = useAuthStore.getState();
-            if (isAuthenticated && user) {
-              console.log('🔄 Fallback: Direct navigation after timeout');
+            if (isAuthenticated && user && user.role !== 'loading') {
+              console.log('🔄 Fallback: Direct navigation after role loaded:', user.role);
               clearTimeout(authTimeout);
               setIsAuthenticating(false);
               navigate(from, { replace: true });

@@ -39,15 +39,29 @@ export const useAuth = () => {
       if (result.success) {
         console.log('✅ useAuth: Login successful for:', email);
         
-        // Immediately set a temporary authenticated state to prevent navigation issues
-        // This will be updated with full user data by the AuthProvider
+        // Set minimal user state immediately to show login success
+        // AuthProvider will override this with full user data from DynamoDB
         const tempUser = {
           uid: result.user.uid,
           email: result.user.email,
-          role: 'student', // Default role until full data loads
+          role: 'loading', // Temporary role until real data loads
           isActive: true
         };
         setUser(tempUser);
+        
+        // Manually trigger user data fetch since AuthProvider might not fire immediately
+        try {
+          console.log('🔐 useAuth: Manually fetching user data from DynamoDB');
+          const existingUser = await dynamoDBUserService.getUser(result.user.uid);
+          if (existingUser.success && existingUser.data) {
+            console.log('✅ useAuth: User data fetched manually, setting real user:', existingUser.data.role);
+            setUser(existingUser.data);
+          } else {
+            console.log('ℹ️ useAuth: No existing user data, keeping temporary user');
+          }
+        } catch (error) {
+          console.warn('⚠️ useAuth: Manual user data fetch failed:', error);
+        }
         
         toast.success('Login successful!');
         return { success: true };

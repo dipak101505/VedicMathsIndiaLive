@@ -19,25 +19,30 @@ const AuthProvider = ({ children }) => {
 
   // Initialize authentication listener
   useEffect(() => {
+    console.log('🔐 AuthProvider: useEffect triggered, isInitialized:', isInitializedRef.current);
     if (isInitializedRef.current) {
+      console.log('🔐 AuthProvider: Already initialized, returning');
       return;
     }
 
     try {
+      console.log('🔐 AuthProvider: Setting up Firebase auth listener');
       isInitializedRef.current = true;
 
       const unsubscribe = firebaseAuth.onAuthStateChanged(async (firebaseUser) => {
+        console.log('🔐 AuthProvider: onAuthStateChanged fired with user:', firebaseUser ? firebaseUser.uid : 'null');
         if (firebaseUser) {
           try {
             console.log('🔐 AuthProvider: Firebase user authenticated:', firebaseUser.uid);
             setLoading(true);
-            
+            debugger;
             // Check if user data already exists in DynamoDB
             const existingUser = await dynamoDBUserService.getUser(firebaseUser.uid);
             
-            if (existingUser.success && existingUser.user) {
-              console.log('✅ AuthProvider: User data found in DynamoDB:', existingUser.user);
-              setUser(existingUser.user);
+            if (existingUser.success && existingUser.data) {
+              console.log('✅ AuthProvider: User data found in DynamoDB:', existingUser.data);
+              console.log('🔐 AuthProvider: Setting user with role:', existingUser.data.role);
+              setUser(existingUser.data);
               
               // Set auth token for Lambda service
               try {
