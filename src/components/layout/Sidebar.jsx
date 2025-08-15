@@ -193,9 +193,7 @@ const Sidebar = () => {
     // Demo role takes precedence for testing
     if (demoRole === 'parent' || isParent) {
       return [
-        { text: 'Dashboard', icon: <DashboardIcon />, path: '/parent-dashboard' },
-        { text: 'Children Progress', icon: <BarChartIcon />, path: '/children-progress' },
-        { text: 'Fees', icon: <MoneyIcon />, path: '/fees' },
+        { text: 'Fees', icon: <MoneyIcon />, path: '/parent-fees' },
         { 
           text: 'My Learners', 
           icon: <PeopleIcon />, 

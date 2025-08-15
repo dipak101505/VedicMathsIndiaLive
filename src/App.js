@@ -27,6 +27,8 @@ import ParentDashboard from './pages/modules/parent/ParentDashboard';
 import WorkingHoursPage from './pages/modules/instructor/WorkingHoursPage';
 import LeavesPage from './pages/modules/instructor/LeavesPage';
 import SessionConflictsPage from './pages/modules/instructor/SessionConflictsPage';
+import ParentFeesPage from './pages/modules/parent/ParentFeesPage';
+import LearnerProfilePage from './pages/modules/parent/LearnerProfilePage';
 
 // Import providers
 import AuthProvider from './components/providers/AuthProvider';
@@ -96,9 +98,11 @@ function App() {
                   {/* Parent Routes */}
                   <Route path="/fees" element={<FeesPage />} />
                   <Route path="/my-learners" element={<Dashboard />} />
-                  <Route path="/learner/:learnerId" element={<Dashboard />} />
+                  <Route path="/learner/:learnerId" element={<LearnerProfilePage />} />
                   <Route path="/parent-dashboard" element={<ParentDashboard />} />
                   <Route path="/children-progress" element={<ParentDashboard />} />
+                  <Route path="/parent-fees" element={<ParentFeesPage />} />
+                  <Route path="/chats" element={<ChatsPage />} />
                   
                   {/* Instructor Routes */}
                   <Route path="/teacher" element={<Navigate to="/teacher/courses" replace />} />
