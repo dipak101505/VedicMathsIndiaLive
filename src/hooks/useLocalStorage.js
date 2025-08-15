@@ -60,44 +60,60 @@ export const useLocalStorage = (key, initialValue) => {
 // Hook for managing multiple localStorage values
 export const useMultiLocalStorage = (keys) => {
   const [values, setValues] = useState({});
-  const [setters, setSetters] = useState({});
 
+  // Initialize values from localStorage
   useEffect(() => {
     const initialValues = {};
-    const initialSetters = {};
-
+    
     keys.forEach(key => {
-      const [value, setValue, removeValue] = useLocalStorage(key, null);
-      initialValues[key] = value;
-      initialSetters[key] = { setValue, removeValue };
+      try {
+        const item = window.localStorage.getItem(key);
+        initialValues[key] = item ? JSON.parse(item) : null;
+      } catch (error) {
+        console.error(`Error reading localStorage key "${key}":`, error);
+        initialValues[key] = null;
+      }
     });
 
     setValues(initialValues);
-    setSetters(initialSetters);
   }, [keys]);
 
   const setValue = useCallback((key, value) => {
-    if (setters[key]) {
-      setters[key].setValue(value);
-      setValues(prev => ({ ...prev, [key]: value }));
+    try {
+      const valueToStore = value instanceof Function ? value(values[key]) : value;
+      
+      // Update state
+      setValues(prev => ({ ...prev, [key]: valueToStore }));
+      
+      // Save to localStorage
+      window.localStorage.setItem(key, JSON.stringify(valueToStore));
+    } catch (error) {
+      console.error(`Error setting localStorage key "${key}":`, error);
     }
-  }, [setters]);
+  }, [values]);
 
   const removeValue = useCallback((key) => {
-    if (setters[key]) {
-      setters[key].removeValue();
+    try {
+      // Update state
       setValues(prev => ({ ...prev, [key]: null }));
+      
+      // Remove from localStorage
+      window.localStorage.removeItem(key);
+    } catch (error) {
+      console.error(`Error removing localStorage key "${key}":`, error);
     }
-  }, [setters]);
+  }, []);
 
   const clearAll = useCallback(() => {
-    keys.forEach(key => {
-      if (setters[key]) {
-        setters[key].removeValue();
-      }
-    });
-    setValues({});
-  }, [keys, setters]);
+    try {
+      keys.forEach(key => {
+        window.localStorage.removeItem(key);
+      });
+      setValues({});
+    } catch (error) {
+      console.error('Error clearing localStorage:', error);
+    }
+  }, [keys]);
 
   return {
     values,
