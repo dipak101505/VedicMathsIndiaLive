@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+// FeesPage - Common fees and payment interface for all user roles
+// This component provides shared payment functionality that can be used
+// by instructors, students, admins, and parents with role-specific views
 import {
   Box,
   Typography,
@@ -29,10 +32,10 @@ import {
   CheckCircle as CheckCircleIcon,
   Close as CloseIcon,
 } from '@mui/icons-material';
-import { useAuthStore } from '../../store/authStore';
+import { useAuth } from '../../../hooks';
 
 const FeesPage = () => {
-  const { user } = useAuthStore();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [feesData, setFeesData] = useState(null);

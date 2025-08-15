@@ -1,11 +1,14 @@
 import React from 'react';
 import { Box, Drawer } from '@mui/material';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
+import Breadcrumbs from './Breadcrumbs';
 
 const drawerWidth = 240;
 
 const MainLayout = () => {
+  const location = useLocation();
+  
   try {
     const drawer = <Sidebar />;
 
@@ -66,6 +69,10 @@ const MainLayout = () => {
             backgroundColor: '#f5f5f5', // Light background for content area
           }}
         >
+          {/* Breadcrumbs - only show on non-dashboard pages */}
+          {location.pathname !== '/dashboard' && location.pathname !== '/' && (
+            <Breadcrumbs />
+          )}
           <Outlet />
         </Box>
       </Box>

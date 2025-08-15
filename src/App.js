@@ -10,10 +10,16 @@ import RegisterPage from './pages/auth/RegisterPage';
 import ProtectedRoute from './components/layout/ProtectedRoute';
 import MainLayout from './components/layout/MainLayout';
 import Dashboard from './pages/dashboard/Dashboard';
-import StudentCourses from './pages/modules/StudentCourses';
-import CourseDetailPage from './pages/modules/CourseDetailPage';
-import FeesPage from './pages/modules/FeesPage';
-import ChatsPage from './pages/modules/ChatsPage';
+import StudentCourses from './pages/modules/student/StudentCourses';
+import CourseDetailPage from './pages/modules/student/CourseDetailPage';
+import FeesPage from './pages/modules/common/FeesPage';
+import ChatsPage from './pages/modules/common/ChatsPage';
+
+// Import new course management pages
+import InstructorCourseManagement from './pages/modules/instructor/InstructorCourseManagement';
+import AdminCourseManagement from './pages/modules/admin/AdminCourseManagement';
+import StudentCourseView from './pages/modules/student/StudentCourseView';
+import ParentDashboard from './pages/modules/parent/ParentDashboard';
 
 // Import providers
 import AuthProvider from './components/providers/AuthProvider';
@@ -73,7 +79,8 @@ function App() {
                   {/* Student Routes */}
                   <Route path="/my-courses" element={<StudentCourses />} />
                   <Route path="/course/:courseId" element={<CourseDetailPage />} />
-                  <Route path="/courses" element={<Dashboard />} />
+                  <Route path="/courses" element={<StudentCourseView />} />
+                  <Route path="/course-discovery" element={<StudentCourseView />} />
                   <Route path="/activity" element={<Dashboard />} />
                   <Route path="/fees" element={<FeesPage />} />
                   <Route path="/chats" element={<ChatsPage />} />
@@ -83,9 +90,12 @@ function App() {
                   <Route path="/fees" element={<FeesPage />} />
                   <Route path="/my-learners" element={<Dashboard />} />
                   <Route path="/learner/:learnerId" element={<Dashboard />} />
+                  <Route path="/parent-dashboard" element={<ParentDashboard />} />
+                  <Route path="/children-progress" element={<ParentDashboard />} />
                   
                   {/* Instructor Routes */}
-                  <Route path="/courses" element={<Dashboard />} />
+                  <Route path="/courses" element={<InstructorCourseManagement />} />
+                  <Route path="/course-management" element={<InstructorCourseManagement />} />
                   <Route path="/calendar" element={<Dashboard />} />
                   <Route path="/payouts" element={<Dashboard />} />
                   <Route path="/working-hours" element={<Dashboard />} />
@@ -97,6 +107,8 @@ function App() {
                   {/* Admin Routes */}
                   <Route path="/get-started" element={<Dashboard />} />
                   <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/course-management" element={<AdminCourseManagement />} />
+                  <Route path="/courses" element={<AdminCourseManagement />} />
                   <Route path="/consultations" element={<Dashboard />} />
                   <Route path="/one-on-one-courses" element={<Dashboard />} />
                   <Route path="/group-courses" element={<Dashboard />} />

@@ -4,32 +4,20 @@ import {
   Typography, 
   TextField, 
   IconButton, 
-  Avatar, 
+  Avatar,
   Paper,
-  Divider,
-  Tooltip,
-  Fade
+  Divider
 } from '@mui/material';
-import { 
-  Send, 
-  AttachFile, 
-  Mic, 
-  Info, 
-  MoreVert,
-  EmojiEmotions,
-  Image,
-  Videocam
-} from '@mui/icons-material';
+import { Send as SendIcon, AttachFile as AttachFileIcon } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
-import ChatMessage from './ChatMessage';
 
-const ChatWindowContainer = styled(Box)(({ theme }) => ({
-  flex: 1,
+const ChatContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
+  height: '100%',
+  backgroundColor: theme.palette.background.paper,
   borderRadius: theme.spacing(2),
   overflow: 'hidden',
-  backgroundColor: theme.palette.background.paper,
   boxShadow: theme.shadows[1],
 }));
 
@@ -37,260 +25,190 @@ const ChatHeader = styled(Box)(({ theme }) => ({
   padding: theme.spacing(2),
   borderBottom: `1px solid ${theme.palette.divider}`,
   backgroundColor: theme.palette.background.paper,
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
 }));
 
-const ChatInfo = styled(Box)(({ theme }) => ({
+const MessagesContainer = styled(Box)(({ theme }) => ({
+  flex: 1,
+  overflowY: 'auto',
+  padding: theme.spacing(2),
+  backgroundColor: theme.palette.grey[50],
+}));
+
+const MessageBubble = styled(Box)(({ theme, isOwn }) => ({
   display: 'flex',
-  alignItems: 'center',
+  flexDirection: isOwn ? 'row-reverse' : 'row',
+  marginBottom: theme.spacing(1),
   gap: theme.spacing(1),
 }));
 
-const MessageContainer = styled(Box)(({ theme }) => ({
-  flex: 1,
-  padding: theme.spacing(2),
-  overflowY: 'auto',
-  backgroundColor: theme.palette.grey[50],
-  backgroundImage: `radial-gradient(circle at 1px 1px, ${theme.palette.grey[200]} 1px, transparent 0)`,
-  backgroundSize: '20px 20px',
+const MessageContent = styled(Box)(({ theme, isOwn }) => ({
+  maxWidth: '70%',
+  padding: theme.spacing(1.5, 2),
+  borderRadius: theme.spacing(2),
+  backgroundColor: isOwn ? theme.palette.primary.main : theme.palette.background.paper,
+  color: isOwn ? theme.palette.primary.contrastText : theme.palette.text.primary,
+  boxShadow: theme.shadows[1],
+  wordBreak: 'break-word',
 }));
 
-const ChatInput = styled(Box)(({ theme }) => ({
+const InputContainer = styled(Box)(({ theme }) => ({
   padding: theme.spacing(2),
   borderTop: `1px solid ${theme.palette.divider}`,
   backgroundColor: theme.palette.background.paper,
   display: 'flex',
+  gap: theme.spacing(1),
   alignItems: 'flex-end',
-  gap: theme.spacing(1),
-}));
-
-const InputActions = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  gap: theme.spacing(0.5),
-}));
-
-const TypingIndicator = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  gap: theme.spacing(1),
-  padding: theme.spacing(1, 2),
-  color: theme.palette.text.secondary,
-  fontStyle: 'italic',
 }));
 
 const ChatWindow = ({ 
   selectedChat, 
-  messages, 
-  onSendMessage, 
-  chatInfo 
+  messages = [], 
+  onSendMessage,
+  sx = {} 
 }) => {
   const [newMessage, setNewMessage] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
-  const inputRef = useRef(null);
-
+  
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
-
+  
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
-
-  useEffect(() => {
-    if (selectedChat) {
-      setNewMessage('');
-      inputRef.current?.focus();
-    }
-  }, [selectedChat]);
-
+  
   const handleSendMessage = () => {
-    if (newMessage.trim()) {
+    if (newMessage.trim() && onSendMessage) {
       onSendMessage(newMessage.trim());
       setNewMessage('');
     }
   };
-
+  
   const handleKeyPress = (event) => {
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
       handleSendMessage();
     }
   };
-
-  const handleTyping = (event) => {
-    setNewMessage(event.target.value);
-    // Simulate typing indicator
-    if (event.target.value && !isTyping) {
-      setIsTyping(true);
-    } else if (!event.target.value && isTyping) {
-      setIsTyping(false);
-    }
-  };
-
+  
   if (!selectedChat) {
     return (
-      <ChatWindowContainer>
+      <ChatContainer sx={sx}>
         <Box sx={{ 
           display: 'flex', 
           alignItems: 'center', 
           justifyContent: 'center', 
           height: '100%',
-          flexDirection: 'column',
-          gap: 2
+          color: 'text.secondary'
         }}>
-          <Typography variant="h6" color="text.secondary">
+          <Typography variant="h6">
             Select a chat to start messaging
           </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Choose from the list on the left to begin a conversation
-          </Typography>
         </Box>
-      </ChatWindowContainer>
+      </ChatContainer>
     );
   }
-
+  
+  const formatTime = (timestamp) => {
+    return new Date(timestamp).toLocaleTimeString('en-US', { 
+      hour: 'numeric', 
+      minute: '2-digit',
+      hour12: true 
+    });
+  };
+  
   return (
-    <ChatWindowContainer>
+    <ChatContainer sx={sx}>
       <ChatHeader>
-        <ChatInfo>
-          <Avatar 
-            sx={{ 
-              bgcolor: 'primary.main',
-              width: 40,
-              height: 40
-            }}
-          >
-            {chatInfo?.avatar || '👤'}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Avatar sx={{ width: 40, height: 40, fontSize: '1.25rem' }}>
+            {selectedChat.avatar}
           </Avatar>
           <Box>
-            <Typography variant="h6" fontWeight="bold">
-              {chatInfo?.title || 'Chat'}
+            <Typography variant="h6" component="h3">
+              {selectedChat.title}
             </Typography>
-            <Typography variant="caption" color="text.secondary">
-              {chatInfo?.online ? 'Online' : 'Offline'}
+            <Typography variant="body2" color="text.secondary">
+              {selectedChat.online ? 'Online' : 'Offline'}
             </Typography>
           </Box>
-        </ChatInfo>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Tooltip title="Chat info">
-            <IconButton size="small">
-              <Info />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="More options">
-            <IconButton size="small">
-              <MoreVert />
-            </IconButton>
-          </Tooltip>
         </Box>
       </ChatHeader>
-
-      <MessageContainer>
+      
+      <MessagesContainer>
         {messages.length === 0 ? (
           <Box sx={{ 
             display: 'flex', 
             alignItems: 'center', 
             justifyContent: 'center', 
             height: '100%',
-            flexDirection: 'column',
-            gap: 2
+            color: 'text.secondary'
           }}>
-            <Typography variant="h6" color="text.secondary">
-              No messages yet
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Start the conversation by sending a message
+            <Typography variant="body1">
+              No messages yet. Start the conversation!
             </Typography>
           </Box>
         ) : (
-          <>
-            {messages.map((message) => (
-              <ChatMessage 
-                key={message.id} 
-                message={message} 
-                isUser={message.sender === 'user'}
-              />
-            ))}
-            {isTyping && (
-              <Fade in={isTyping}>
-                <TypingIndicator>
-                  <Typography variant="body2">
-                    {chatInfo?.title || 'Someone'} is typing...
-                  </Typography>
-                </TypingIndicator>
-              </Fade>
-            )}
-            <div ref={messagesEndRef} />
-          </>
+          messages.map((message) => (
+            <MessageBubble key={message.id} isOwn={message.sender === 'user'}>
+              <Avatar 
+                sx={{ 
+                  width: 32, 
+                  height: 32, 
+                  fontSize: '0.875rem',
+                  bgcolor: message.sender === 'user' ? 'primary.main' : 'grey.500'
+                }}
+              >
+                {message.avatar}
+              </Avatar>
+              <MessageContent isOwn={message.sender === 'user'}>
+                <Typography variant="body2" sx={{ mb: 0.5 }}>
+                  {message.text}
+                </Typography>
+                <Typography 
+                  variant="caption" 
+                  color={message.sender === 'user' ? 'primary.light' : 'text.secondary'}
+                  sx={{ opacity: 0.8 }}
+                >
+                  {formatTime(message.timestamp)}
+                </Typography>
+              </MessageContent>
+            </MessageBubble>
+          ))
         )}
-      </MessageContainer>
-
-      <ChatInput>
-        <InputActions>
-          <Tooltip title="Attach file">
-            <IconButton size="small">
-              <AttachFile />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Add image">
-            <IconButton size="small">
-              <Image />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Add video">
-            <IconButton size="small">
-              <Videocam />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Add emoji">
-            <IconButton size="small">
-              <EmojiEmotions />
-            </IconButton>
-          </Tooltip>
-        </InputActions>
-        
+        <div ref={messagesEndRef} />
+      </MessagesContainer>
+      
+      <InputContainer>
+        <IconButton size="small" color="primary">
+          <AttachFileIcon />
+        </IconButton>
         <TextField
-          ref={inputRef}
           fullWidth
-          placeholder="Type a message..."
-          value={newMessage}
-          onChange={handleTyping}
-          onKeyPress={handleKeyPress}
           multiline
           maxRows={4}
+          placeholder="Type a message..."
+          value={newMessage}
+          onChange={(e) => setNewMessage(e.target.value)}
+          onKeyPress={handleKeyPress}
+          variant="outlined"
           size="small"
-          sx={{ mx: 1 }}
+          sx={{ 
+            '& .MuiOutlinedInput-root': { 
+              borderRadius: 3,
+              backgroundColor: 'background.paper'
+            }
+          }}
         />
-        
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Tooltip title="Voice message">
-            <IconButton size="small">
-              <Mic />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Send message">
-            <IconButton
-              color="primary"
-              onClick={handleSendMessage}
-              disabled={!newMessage.trim()}
-              sx={{
-                backgroundColor: newMessage.trim() ? 'primary.main' : 'transparent',
-                color: newMessage.trim() ? 'white' : 'text.secondary',
-                '&:hover': {
-                  backgroundColor: newMessage.trim() ? 'primary.dark' : 'action.hover',
-                }
-              }}
-            >
-              <Send />
-            </IconButton>
-          </Tooltip>
-        </Box>
-      </ChatInput>
-    </ChatWindowContainer>
+        <IconButton 
+          color="primary" 
+          onClick={handleSendMessage}
+          disabled={!newMessage.trim()}
+        >
+          <SendIcon />
+        </IconButton>
+      </InputContainer>
+    </ChatContainer>
   );
 };
 

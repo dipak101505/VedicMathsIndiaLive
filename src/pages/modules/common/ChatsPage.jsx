@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
+// ChatsPage - Common chat interface for all user roles
+// This component provides a shared chat functionality that can be used
+// by instructors, students, admins, and parents with role-specific features
 import { Box } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import { ChatList, ChatWindow } from '../../components/chat';
+import ChatList from '../../../components/chat/ChatList';
+import ChatWindow from '../../../components/chat/ChatWindow';
 
 // Enhanced mock data
 const mockChats = [

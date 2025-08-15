@@ -52,18 +52,51 @@ import {
   Store as StoreIcon,
   AccountBalance as BankIcon,
 } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { usePermissions } from '../../hooks/usePermissions';
 import { useAuthStore } from '../../store/authStore';
 
 const Sidebar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, logout } = useAuthStore();
   const { isAdmin, isSuperAdmin, isInstructor, isStudent, isParent } = usePermissions();
   const [expandedLearners, setExpandedLearners] = useState(true);
   const [demoRole, setDemoRole] = useState(null);
   const [accountMenuAnchor, setAccountMenuAnchor] = useState(null);
   const [notificationModalOpen, setNotificationModalOpen] = useState(false);
+
+  // Helper function to check if a menu item is currently active
+  const isActiveRoute = (path) => {
+    if (path === '/') {
+      return location.pathname === '/';
+    }
+    
+    // Handle different URL patterns
+    const currentPath = location.pathname;
+    
+    // Map sidebar paths to actual URL patterns
+    const pathMappings = {
+      '/courses': ['/courses', '/student/classes'],
+      '/my-courses': ['/my-courses', '/student/my-courses', '/course'],
+      '/activity': ['/activity', '/student/activity'],
+      '/fees': ['/fees', '/student/fees'],
+      '/chats': ['/chats', '/student/chats'],
+      '/notifications': ['/notifications', '/student/notifications'],
+    };
+    
+    // Check if current path matches any of the mapped paths
+    const mappedPaths = pathMappings[path] || [path];
+    const isActive = mappedPaths.some(mappedPath => 
+      currentPath === mappedPath || currentPath.startsWith(mappedPath + '/')
+    );
+    
+    // For debugging
+    console.log(`🔍 Route check: ${path} vs ${currentPath} = ${isActive}`);
+    console.log(`🔍 Mapped paths: ${mappedPaths.join(', ')}`);
+    
+    return isActive;
+  };
 
   // Get demo role from localStorage and listen for changes
   useEffect(() => {
@@ -160,6 +193,8 @@ const Sidebar = () => {
     // Demo role takes precedence for testing
     if (demoRole === 'parent' || isParent) {
       return [
+        { text: 'Dashboard', icon: <DashboardIcon />, path: '/parent-dashboard' },
+        { text: 'Children Progress', icon: <BarChartIcon />, path: '/children-progress' },
         { text: 'Fees', icon: <MoneyIcon />, path: '/fees' },
         { 
           text: 'My Learners', 
@@ -172,23 +207,12 @@ const Sidebar = () => {
       ];
     }
 
-    if (demoRole === 'instructor' || isInstructor) {
-      return [
-        { text: 'Courses', icon: <FolderIcon />, path: '/courses' },
-        { text: 'Calendar', icon: <CalendarIcon />, path: '/calendar' },
-        { text: 'Payouts', icon: <MoneyIcon />, path: '/payouts' },
-        { text: 'Working Hours', icon: <WorkingHoursIcon />, path: '/working-hours' },
-        { text: 'Leaves', icon: <LeavesIcon />, path: '/leaves' },
-        { text: 'Session conflicts', icon: <SessionConflictsIcon />, path: '/session-conflicts' },
-        { text: 'Chats', icon: <ChatIcon />, path: '/chats' },
-        { text: 'Notifications', icon: <NotificationsIcon />, path: '/notifications' },
-      ];
-    }
-
     if (demoRole === 'admin' || isAdmin) {
       return [
-        { text: 'Get started', icon: <RocketIcon />, path: '/get-started', isHighlighted: true },
         { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
+        { text: 'Get started', icon: <RocketIcon />, path: '/get-started' },
+        { text: 'Course Management', icon: <FolderIcon />, path: '/course-management' },
+        { text: 'All Courses', icon: <SchoolIcon />, path: '/courses' },
         { text: 'Consultations', icon: <VideoIcon />, path: '/consultations' },
         { text: '1:1 courses', icon: <OneOnOneIcon />, path: '/one-on-one-courses' },
         { text: 'Group courses', icon: <GroupCoursesIcon />, path: '/group-courses' },
@@ -204,10 +228,27 @@ const Sidebar = () => {
       ];
     }
     
+    if (demoRole === 'instructor' || isInstructor) {
+      return [
+        { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
+        { text: 'Course Management', icon: <FolderIcon />, path: '/course-management' },
+        { text: 'My Courses', icon: <SchoolIcon />, path: '/courses' },
+        { text: 'Calendar', icon: <CalendarIcon />, path: '/calendar' },
+        { text: 'Payouts', icon: <MoneyIcon />, path: '/payouts' },
+        { text: 'Working Hours', icon: <WorkingHoursIcon />, path: '/working-hours' },
+        { text: 'Leaves', icon: <LeavesIcon />, path: '/leaves' },
+        { text: 'Session conflicts', icon: <SessionConflictsIcon />, path: '/session-conflicts' },
+        { text: 'Chats', icon: <ChatIcon />, path: '/chats' },
+        { text: 'Notifications', icon: <NotificationsIcon />, path: '/notifications' },
+      ];
+    }
+
+
+    
     if (demoRole === 'student' || isStudent) {
       return [
         { text: 'My Courses', icon: <BookIcon />, path: '/my-courses' },
-        { text: 'All Courses', icon: <FolderIcon />, path: '/courses' },
+        { text: 'All Courses', icon: <SchoolIcon />, path: '/courses' },
         { text: 'Activity', icon: <BarChartIcon />, path: '/activity' },
         { text: 'Fees', icon: <MoneyIcon />, path: '/fees' },
         { text: 'Chats', icon: <ChatIcon />, path: '/chats' },
@@ -298,6 +339,7 @@ const Sidebar = () => {
                 mx: 1,
                 mb: 0.5,
                 borderRadius: 1,
+                backgroundColor: expandedLearners ? 'rgba(255,255,255,0.1)' : 'transparent',
                 '&:hover': {
                   backgroundColor: 'rgba(255,255,255,0.1)',
                 },
@@ -311,7 +353,7 @@ const Sidebar = () => {
                 sx={{ 
                   color: 'white',
                   '& .MuiTypography-root': {
-                    fontWeight: 500,
+                    fontWeight: expandedLearners ? 600 : 500,
                   }
                 }}
               />
@@ -330,9 +372,9 @@ const Sidebar = () => {
                       mr: 1,
                       mb: 0.5,
                       borderRadius: 1,
-                      backgroundColor: 'rgba(255,255,255,0.05)',
+                      backgroundColor: isActiveRoute(learner.path) ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.05)',
                       '&:hover': {
-                        backgroundColor: 'rgba(255,255,255,0.15)',
+                        backgroundColor: isActiveRoute(learner.path) ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.15)',
                       },
                     }}
                   >
@@ -346,7 +388,7 @@ const Sidebar = () => {
                       sx={{ 
                         color: 'white',
                         '& .MuiTypography-root': {
-                          fontWeight: 500,
+                          fontWeight: isActiveRoute(learner.path) ? 600 : 500,
                         }
                       }}
                     />
@@ -359,8 +401,8 @@ const Sidebar = () => {
       );
     }
 
-    // Handle highlighted items (like "Get started")
-    if (item.isHighlighted) {
+    // Handle active routes with special styling
+    if (isActiveRoute(item.path)) {
       return (
         <ListItem key={item.text} disablePadding>
           <ListItemButton 
@@ -400,8 +442,9 @@ const Sidebar = () => {
             mx: 1,
             mb: 0.5,
             borderRadius: 1,
+            backgroundColor: isActiveRoute(item.path) ? 'rgba(255,255,255,0.15)' : 'transparent',
             '&:hover': {
-              backgroundColor: 'rgba(255,255,255,0.1)',
+              backgroundColor: isActiveRoute(item.path) ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.1)',
             },
           }}
         >
@@ -413,7 +456,7 @@ const Sidebar = () => {
             sx={{ 
               color: 'white',
               '& .MuiTypography-root': {
-                fontWeight: 500,
+                fontWeight: isActiveRoute(item.path) ? 600 : 500,
               }
             }}
           />

@@ -1,4 +1,7 @@
 import React, { useEffect, useState } from 'react';
+// UserManagement - Admin-specific user management interface
+// This component provides administrators with tools to manage all users,
+// assign roles, and monitor user activity across the platform
 import {
   Box,
   Grid,

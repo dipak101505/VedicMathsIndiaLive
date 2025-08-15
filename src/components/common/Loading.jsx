@@ -1,30 +1,59 @@
 import React from 'react';
-import { Box, CircularProgress, Typography, Skeleton } from '@mui/material';
-import { styled } from '@mui/material/styles';
-
-const LoadingContainer = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  justifyContent: 'center',
-  padding: theme.spacing(3),
-}));
+import { Box, CircularProgress, Typography, Fade } from '@mui/material';
 
 const Loading = ({ 
-  size = 'medium', 
   message = 'Loading...', 
-  variant = 'spinner',
+  size = 'large',
   fullScreen = false,
-  ...props 
+  showMessage = true,
+  className,
+  sx 
 }) => {
-  const sizeMap = {
-    small: 24,
-    medium: 40,
-    large: 60,
-  };
-
-  const spinnerSize = sizeMap[size] || sizeMap.medium;
-
+  const progressSize = size === 'small' ? 24 : size === 'medium' ? 40 : 60;
+  
+  const content = (
+    <Box
+      className={className}
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 2,
+        ...sx
+      }}
+    >
+      <Fade in={true} style={{ transitionDelay: '200ms' }}>
+        <CircularProgress 
+          size={progressSize} 
+          thickness={4}
+          sx={{
+            color: 'primary.main',
+            '& .MuiCircularProgress-circle': {
+              strokeLinecap: 'round',
+            }
+          }}
+        />
+      </Fade>
+      
+      {showMessage && (
+        <Fade in={true} style={{ transitionDelay: '400ms' }}>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{
+              textAlign: 'center',
+              fontWeight: 500,
+              letterSpacing: '0.5px'
+            }}
+          >
+            {message}
+          </Typography>
+        </Fade>
+      )}
+    </Box>
+  );
+  
   if (fullScreen) {
     return (
       <Box
@@ -34,46 +63,19 @@ const Loading = ({
           left: 0,
           right: 0,
           bottom: 0,
+          backgroundColor: 'background.default',
+          zIndex: 9999,
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: 'rgba(255, 255, 255, 0.9)',
-          zIndex: 9999,
+          justifyContent: 'center'
         }}
       >
-        <LoadingContainer>
-          <CircularProgress size={spinnerSize} />
-          {message && (
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-              {message}
-            </Typography>
-          )}
-        </LoadingContainer>
+        {content}
       </Box>
     );
   }
-
-  if (variant === 'skeleton') {
-    return (
-      <Box sx={{ p: 2 }}>
-        <Skeleton variant="text" width="60%" height={32} sx={{ mb: 1 }} />
-        <Skeleton variant="rectangular" width="100%" height={120} sx={{ mb: 1 }} />
-        <Skeleton variant="text" width="40%" />
-        <Skeleton variant="text" width="80%" />
-      </Box>
-    );
-  }
-
-  return (
-    <LoadingContainer {...props}>
-      <CircularProgress size={spinnerSize} />
-      {message && (
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-          {message}
-        </Typography>
-      )}
-    </LoadingContainer>
-  );
+  
+  return content;
 };
 
 export default Loading;

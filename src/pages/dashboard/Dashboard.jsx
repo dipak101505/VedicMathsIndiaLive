@@ -4,6 +4,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { usePermissions } from '../../hooks/usePermissions';
 import AdminDashboard from './AdminDashboard';
 import StudentDashboard from './StudentDashboard';
+import InstructorDashboard from './InstructorDashboard';
 
 const Dashboard = () => {
   const [demoRole, setDemoRole] = useState(() => {
@@ -16,7 +17,7 @@ const Dashboard = () => {
   });
   
   const { user, loading } = useAuth();
-  const { isAdmin, isStudent, userRole } = usePermissions();
+  const { isAdmin, isStudent, isInstructor, userRole } = usePermissions();
 
   // Show loading state while authentication is being determined
   if (loading) {
@@ -177,6 +178,8 @@ const Dashboard = () => {
         </Box>
       ) : isDemoStudent || (isStudent && !demoRole) ? (
         <StudentDashboard />
+      ) : isDemoInstructor || (isInstructor && !demoRole) ? (
+        <InstructorDashboard />
       ) : isDemoParent ? (
         <Box>
           <Typography variant="h4">Parent Dashboard</Typography>
@@ -213,64 +216,6 @@ const Dashboard = () => {
                 <Typography variant="subtitle1" fontWeight="bold">Emma Williams</Typography>
                 <Typography variant="body2" color="text.secondary">Grade 6</Typography>
                 <Typography variant="body2" color="text.secondary">Progress: 90%</Typography>
-              </Box>
-            </Box>
-          </Box>
-        </Box>
-      ) : isDemoInstructor ? (
-        <Box>
-          <Typography variant="h4">Instructor Dashboard</Typography>
-          <Typography variant="h6" color="primary" sx={{ mt: 2, mb: 1 }}>
-            Welcome to the Instructor Portal
-          </Typography>
-          <Typography variant="body1" sx={{ mb: 2 }}>
-            Manage your courses, schedule, and teaching activities at Bright Future Academy.
-          </Typography>
-          
-          <Box sx={{ mt: 3 }}>
-            <Typography variant="h6" gutterBottom>
-              Quick Actions:
-            </Typography>
-            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-              <Box sx={{ 
-                p: 2, 
-                border: '1px solid', 
-                borderColor: 'divider', 
-                borderRadius: 2,
-                minWidth: 200
-              }}>
-                <Typography variant="subtitle1" fontWeight="bold">Courses</Typography>
-                <Typography variant="body2" color="text.secondary">Manage your assigned courses</Typography>
-              </Box>
-              <Box sx={{ 
-                p: 2, 
-                border: '1px solid', 
-                borderColor: 'divider', 
-                borderRadius: 2,
-                minWidth: 200
-              }}>
-                <Typography variant="subtitle1" fontWeight="bold">Calendar</Typography>
-                <Typography variant="body2" color="text.secondary">View your teaching schedule</Typography>
-              </Box>
-              <Box sx={{ 
-                p: 2, 
-                border: '1px solid', 
-                borderColor: 'divider', 
-                borderRadius: 2,
-                minWidth: 200
-              }}>
-                <Typography variant="subtitle1" fontWeight="bold">Payouts</Typography>
-                <Typography variant="body2" color="text.secondary">Track your earnings</Typography>
-              </Box>
-              <Box sx={{ 
-                p: 2, 
-                border: '1px solid', 
-                borderColor: 'divider', 
-                borderRadius: 2,
-                minWidth: 200
-              }}>
-                <Typography variant="subtitle1" fontWeight="bold">Working Hours</Typography>
-                <Typography variant="body2" color="text.secondary">Monitor your teaching hours</Typography>
               </Box>
             </Box>
           </Box>

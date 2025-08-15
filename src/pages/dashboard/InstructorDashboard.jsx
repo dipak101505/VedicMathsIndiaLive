@@ -12,6 +12,7 @@ import {
   ListItemAvatar,
   Divider,
   LinearProgress,
+  IconButton,
 } from '@mui/material';
 import {
   School as SchoolIcon,

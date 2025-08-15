@@ -1,62 +1,36 @@
 import React from 'react';
-import { Card as MuiCard, CardContent, CardActions, Typography, Box } from '@mui/material';
+import { Paper, Box } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
-const StyledCard = styled(MuiCard)(({ theme }) => ({
-  borderRadius: theme.shape.borderRadius * 1.5,
-  boxShadow: theme.shadows[2],
-  transition: 'box-shadow 0.3s ease-in-out, transform 0.2s ease-in-out',
-  
+const StyledCard = styled(Paper)(({ theme, variant = 'default' }) => ({
+  padding: theme.spacing(3),
+  borderRadius: theme.spacing(2),
+  boxShadow: variant === 'elevated' 
+    ? theme.shadows[8] 
+    : variant === 'outlined'
+    ? 'none'
+    : theme.shadows[1],
+  border: variant === 'outlined' ? `1px solid ${theme.palette.divider}` : 'none',
+  transition: 'all 0.2s ease-in-out',
   '&:hover': {
-    boxShadow: theme.shadows[8],
+    boxShadow: variant === 'elevated' 
+      ? theme.shadows[12] 
+      : theme.shadows[4],
     transform: 'translateY(-2px)',
   },
 }));
 
-const CardHeader = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(2, 3, 0, 3),
-  borderBottom: `1px solid ${theme.palette.divider}`,
-  marginBottom: theme.spacing(2),
-}));
-
 const Card = ({ 
-  title, 
-  subtitle, 
-  actions, 
   children, 
-  className, 
-  elevation = 2,
+  variant = 'default',
+  sx = {},
   ...props 
 }) => {
   return (
-    <StyledCard className={className} elevation={elevation} {...props}>
-      {(title || subtitle || actions) && (
-        <CardHeader>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <Box sx={{ flex: 1 }}>
-              {title && (
-                <Typography variant="h6" component="h3" gutterBottom>
-                  {title}
-                </Typography>
-              )}
-              {subtitle && (
-                <Typography variant="body2" color="text.secondary">
-                  {subtitle}
-                </Typography>
-              )}
-            </Box>
-            {actions && (
-              <Box sx={{ ml: 2, display: 'flex', gap: 1 }}>
-                {actions}
-              </Box>
-            )}
-          </Box>
-        </CardHeader>
-      )}
-      
-      <CardContent sx={{ pt: 0 }}>
+    <StyledCard variant={variant} sx={sx} {...props}>
+      <Box>
         {children}
-      </CardContent>
+      </Box>
     </StyledCard>
   );
 };
