@@ -12,7 +12,7 @@ export const ROUTES = {
   HOME: '/',
   
   // Student Routes
-  STUDENT_COURSES: '/my-courses',
+  STUDENT_COURSES: '/course',
   COURSE_DETAIL: '/course/:courseId',
   COURSE_DISCOVERY: '/course-discovery',
   STUDENT_ALL_COURSES: '/courses',
@@ -32,6 +32,8 @@ export const ROUTES = {
   // Instructor Routes
   INSTRUCTOR_COURSE_MANAGEMENT: '/course-management',
   INSTRUCTOR_COURSES: '/courses',
+  TEACHER_COURSES: '/teacher/courses',
+  TEACHER_COURSE_DETAIL: '/teacher/courses/:courseId',
   INSTRUCTOR_CALENDAR: '/calendar',
   INSTRUCTOR_PAYOUTS: '/payouts',
   INSTRUCTOR_WORKING_HOURS: '/working-hours',
@@ -85,6 +87,8 @@ export const ROLE_ROUTES = {
   instructor: [
     ROUTES.INSTRUCTOR_COURSE_MANAGEMENT,
     ROUTES.INSTRUCTOR_COURSES,
+    ROUTES.TEACHER_COURSES,
+    ROUTES.TEACHER_COURSE_DETAIL,
     ROUTES.INSTRUCTOR_CALENDAR,
     ROUTES.INSTRUCTOR_PAYOUTS,
     ROUTES.INSTRUCTOR_WORKING_HOURS,
@@ -152,6 +156,20 @@ export const ROUTE_METADATA = {
     title: 'Course Management',
     description: 'Manage your courses and content',
     icon: 'FolderIcon',
+    requiresAuth: true,
+    roles: ['instructor'],
+  },
+  [ROUTES.TEACHER_COURSES]: {
+    title: 'My Teaching Courses',
+    description: 'View and manage your teaching courses',
+    icon: 'SchoolIcon',
+    requiresAuth: true,
+    roles: ['instructor'],
+  },
+  [ROUTES.TEACHER_COURSE_DETAIL]: {
+    title: 'Course Details',
+    description: 'View and manage specific course details',
+    icon: 'SchoolIcon',
     requiresAuth: true,
     roles: ['instructor'],
   },

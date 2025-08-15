@@ -14,12 +14,19 @@ import StudentCourses from './pages/modules/student/StudentCourses';
 import CourseDetailPage from './pages/modules/student/CourseDetailPage';
 import FeesPage from './pages/modules/common/FeesPage';
 import ChatsPage from './pages/modules/common/ChatsPage';
+import CalendarPage from './pages/modules/common/CalendarPage';
+import PayoutsPage from './pages/modules/common/PayoutsPage';
 
 // Import new course management pages
 import InstructorCourseManagement from './pages/modules/instructor/InstructorCourseManagement';
+import InstructorCourses from './pages/modules/instructor/InstructorCourses';
+import InstructorCourseDetailPage from './pages/modules/instructor/InstructorCourseDetailPage';
 import AdminCourseManagement from './pages/modules/admin/AdminCourseManagement';
 import StudentCourseView from './pages/modules/student/StudentCourseView';
 import ParentDashboard from './pages/modules/parent/ParentDashboard';
+import WorkingHoursPage from './pages/modules/instructor/WorkingHoursPage';
+import LeavesPage from './pages/modules/instructor/LeavesPage';
+import SessionConflictsPage from './pages/modules/instructor/SessionConflictsPage';
 
 // Import providers
 import AuthProvider from './components/providers/AuthProvider';
@@ -77,7 +84,7 @@ function App() {
                   <Route path="/" element={<Dashboard />} />
                   
                   {/* Student Routes */}
-                  <Route path="/my-courses" element={<StudentCourses />} />
+                  <Route path="/course" element={<StudentCourses />} />
                   <Route path="/course/:courseId" element={<CourseDetailPage />} />
                   <Route path="/courses" element={<StudentCourseView />} />
                   <Route path="/course-discovery" element={<StudentCourseView />} />
@@ -94,13 +101,15 @@ function App() {
                   <Route path="/children-progress" element={<ParentDashboard />} />
                   
                   {/* Instructor Routes */}
-                  <Route path="/courses" element={<InstructorCourseManagement />} />
+                  <Route path="/teacher" element={<Navigate to="/teacher/courses" replace />} />
+                  <Route path="/teacher/courses/:courseId" element={<InstructorCourseDetailPage />} />
+                  <Route path="/teacher/courses" element={<InstructorCourses />} />
                   <Route path="/course-management" element={<InstructorCourseManagement />} />
-                  <Route path="/calendar" element={<Dashboard />} />
-                  <Route path="/payouts" element={<Dashboard />} />
-                  <Route path="/working-hours" element={<Dashboard />} />
-                  <Route path="/leaves" element={<Dashboard />} />
-                  <Route path="/session-conflicts" element={<Dashboard />} />
+                  <Route path="/calendar" element={<CalendarPage />} />
+                  <Route path="/payouts" element={<PayoutsPage />} />
+                  <Route path="/working-hours" element={<WorkingHoursPage />} />
+                  <Route path="/leaves" element={<LeavesPage />} />
+                  <Route path="/session-conflicts" element={<SessionConflictsPage />} />
                   <Route path="/chats" element={<ChatsPage />} />
                   <Route path="/notifications" element={<Dashboard />} />
                   

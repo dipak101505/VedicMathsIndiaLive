@@ -85,21 +85,76 @@ export const useCalendar = (options = {}) => {
     };
   }, [currentDate, viewMode]);
   
-  // Get calendar grid data
-  const getCalendarGrid = useMemo(() => {
-    switch (viewMode) {
-      case 'month':
-        return getMonthGrid();
-      case 'week':
-        return getWeekGrid();
-      case 'day':
-        return getDayGrid();
-      case 'year':
-        return getYearGrid();
-      default:
-        return getMonthGrid();
+  // Event queries
+  const getEventsForDate = useCallback((date) => {
+    return events.filter(event => {
+      if (event.allDay) {
+        return isSameDay(event.start, date);
+      }
+      
+      const eventStart = new Date(event.start);
+      const eventEnd = new Date(event.end);
+      const queryDate = new Date(date);
+      
+      return eventStart <= queryDate && eventEnd >= queryDate;
+    });
+  }, [events]);
+  
+  const getEventsForMonth = useCallback((year, month) => {
+    return events.filter(event => {
+      const eventDate = new Date(event.start);
+      return eventDate.getFullYear() === year && eventDate.getMonth() === month;
+    });
+  }, [events]);
+  
+  const getEventsForTimeSlot = useCallback((date, hour) => {
+    return events.filter(event => {
+      if (event.allDay) return false;
+      
+      const eventStart = new Date(event.start);
+      const eventEnd = new Date(event.end);
+      const queryDate = new Date(date);
+      queryDate.setHours(hour, 0, 0, 0);
+      const nextHour = new Date(queryDate);
+      nextHour.setHours(hour + 1, 0, 0, 0);
+      
+      return eventStart < nextHour && eventEnd > queryDate;
+    });
+  }, [events]);
+  
+  // Utility functions
+  const isSameDay = useCallback((date1, date2) => {
+    return date1.getFullYear() === date2.getFullYear() &&
+           date1.getMonth() === date2.getMonth() &&
+           date1.getDate() === date2.getDate();
+  }, []);
+  
+  const getWeekStart = useCallback((date, weekStart) => {
+    const d = new Date(date);
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : weekStart);
+    return new Date(d.setDate(diff));
+  }, []);
+  
+  // Get time slots for day/week view
+  const getTimeSlots = useCallback((date) => {
+    const slots = [];
+    const [startHour] = preferences.workingHours.start.split(':').map(Number);
+    const [endHour] = preferences.workingHours.end.split(':').map(Number);
+    
+    for (let hour = startHour; hour < endHour; hour++) {
+      const time = new Date(date);
+      time.setHours(hour, 0, 0, 0);
+      
+      slots.push({
+        time,
+        hour,
+        events: getEventsForTimeSlot(date, hour)
+      });
     }
-  }, [viewMode, currentDate, preferences]);
+    
+    return slots;
+  }, [preferences, getEventsForTimeSlot]);
   
   // Month view grid
   const getMonthGrid = useCallback(() => {
@@ -109,7 +164,7 @@ export const useCalendar = (options = {}) => {
     const lastDay = new Date(year, month + 1, 0);
     const startDate = new Date(firstDay);
     
-    // Adjust start date to include previous month's days
+    // Adjust start date to include previous month's days to fill the first week
     const dayOfWeek = firstDay.getDay();
     const weekStart = preferences.weekStart;
     const daysToSubtract = (dayOfWeek - weekStart + 7) % 7;
@@ -118,7 +173,8 @@ export const useCalendar = (options = {}) => {
     const grid = [];
     const currentDateObj = new Date(startDate);
     
-    while (currentDateObj <= lastDay || grid.length < 42) {
+    // Continue until we've covered the current month and filled the last week
+    while (currentDateObj <= lastDay || currentDateObj.getDay() !== weekStart) {
       const week = [];
       for (let i = 0; i < 7; i++) {
         const date = new Date(currentDateObj);
@@ -140,7 +196,7 @@ export const useCalendar = (options = {}) => {
     }
     
     return grid;
-  }, [currentDate, preferences, selectedDate, events]);
+  }, [currentDate, preferences, selectedDate, getEventsForDate]);
   
   // Week view grid
   const getWeekGrid = useCallback(() => {
@@ -168,7 +224,7 @@ export const useCalendar = (options = {}) => {
     }
     
     return grid;
-  }, [currentDate, preferences, selectedDate, events]);
+  }, [currentDate, preferences, selectedDate, getEventsForDate, getTimeSlots]);
   
   // Day view grid
   const getDayGrid = useCallback(() => {
@@ -183,20 +239,20 @@ export const useCalendar = (options = {}) => {
       events: getEventsForDate(date),
       timeSlots: getTimeSlots(date)
     };
-  }, [currentDate, selectedDate, events]);
+  }, [currentDate, selectedDate, getEventsForDate, getTimeSlots]);
   
   // Year view grid
   const getYearGrid = useCallback(() => {
     const year = currentDate.getFullYear();
-    const grid = [];
+    const months = [];
     
     for (let month = 0; month < 12; month++) {
       const monthDate = new Date(year, month, 1);
-      const monthName = monthDate.toLocaleDateString('en-US', { month: 'short' });
+      const monthName = monthDate.toLocaleString('default', { month: 'long' });
       const daysInMonth = new Date(year, month + 1, 0).getDate();
-      const firstDay = new Date(year, month, 1).getDay();
+      const firstDay = monthDate.getDay();
       
-      grid.push({
+      months.push({
         month,
         monthName,
         year,
@@ -206,28 +262,24 @@ export const useCalendar = (options = {}) => {
       });
     }
     
-    return grid;
-  }, [currentDate, events]);
+    return months;
+  }, [currentDate, getEventsForMonth]);
   
-  // Get time slots for day/week view
-  const getTimeSlots = useCallback((date) => {
-    const slots = [];
-    const [startHour] = preferences.workingHours.start.split(':').map(Number);
-    const [endHour] = preferences.workingHours.end.split(':').map(Number);
-    
-    for (let hour = startHour; hour < endHour; hour++) {
-      const time = new Date(date);
-      time.setHours(hour, 0, 0, 0);
-      
-      slots.push({
-        time,
-        hour,
-        events: getEventsForTimeSlot(date, hour)
-      });
+  // Get calendar grid data
+  const getCalendarGrid = useMemo(() => {
+    switch (viewMode) {
+      case 'month':
+        return getMonthGrid();
+      case 'week':
+        return getWeekGrid();
+      case 'day':
+        return getDayGrid();
+      case 'year':
+        return getYearGrid();
+      default:
+        return getMonthGrid();
     }
-    
-    return slots;
-  }, [preferences, events]);
+  }, [viewMode, getMonthGrid, getWeekGrid, getDayGrid, getYearGrid]);
   
   // Event management
   const addEvent = useCallback((eventData) => {
@@ -279,43 +331,6 @@ export const useCalendar = (options = {}) => {
     }
   }, [events]);
   
-  // Event queries
-  const getEventsForDate = useCallback((date) => {
-    return events.filter(event => {
-      if (event.allDay) {
-        return isSameDay(event.start, date);
-      }
-      
-      const eventStart = new Date(event.start);
-      const eventEnd = new Date(event.end);
-      const queryDate = new Date(date);
-      
-      return eventStart <= queryDate && eventEnd >= queryDate;
-    });
-  }, [events]);
-  
-  const getEventsForMonth = useCallback((year, month) => {
-    return events.filter(event => {
-      const eventDate = new Date(event.start);
-      return eventDate.getFullYear() === year && eventDate.getMonth() === month;
-    });
-  }, [events]);
-  
-  const getEventsForTimeSlot = useCallback((date, hour) => {
-    return events.filter(event => {
-      if (event.allDay) return false;
-      
-      const eventStart = new Date(event.start);
-      const eventEnd = new Date(event.end);
-      const queryDate = new Date(date);
-      queryDate.setHours(hour, 0, 0, 0);
-      const nextHour = new Date(queryDate);
-      nextHour.setHours(hour + 1, 0, 0, 0);
-      
-      return eventStart < nextHour && eventEnd > queryDate;
-    });
-  }, [events]);
-  
   // Availability checking
   const checkAvailability = useCallback((start, end, excludeEventId = null) => {
     const conflictingEvents = events.filter(event => {
@@ -344,20 +359,6 @@ export const useCalendar = (options = {}) => {
     
     return hour >= startHour && hour < endHour;
   }, [preferences]);
-  
-  // Utility functions
-  const isSameDay = useCallback((date1, date2) => {
-    return date1.getFullYear() === date2.getFullYear() &&
-           date1.getMonth() === date2.getMonth() &&
-           date1.getDate() === date2.getDate();
-  }, []);
-  
-  const getWeekStart = useCallback((date, weekStart) => {
-    const d = new Date(date);
-    const day = d.getDay();
-    const diff = d.getDate() - day + (day === 0 ? -6 : weekStart);
-    return new Date(d.setDate(diff));
-  }, []);
   
   // Export calendar data
   const exportCalendar = useCallback((format = 'json') => {

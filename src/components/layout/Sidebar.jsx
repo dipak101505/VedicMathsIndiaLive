@@ -78,7 +78,7 @@ const Sidebar = () => {
     // Map sidebar paths to actual URL patterns
     const pathMappings = {
       '/courses': ['/courses', '/student/classes'],
-      '/my-courses': ['/my-courses', '/student/my-courses', '/course'],
+      '/course': ['/course', '/student/course'],
       '/activity': ['/activity', '/student/activity'],
       '/fees': ['/fees', '/student/fees'],
       '/chats': ['/chats', '/student/chats'],
@@ -230,9 +230,7 @@ const Sidebar = () => {
     
     if (demoRole === 'instructor' || isInstructor) {
       return [
-        { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
-        { text: 'Course Management', icon: <FolderIcon />, path: '/course-management' },
-        { text: 'My Courses', icon: <SchoolIcon />, path: '/courses' },
+        { text: 'Courses', icon: <FolderIcon />, path: '/teacher/courses' },
         { text: 'Calendar', icon: <CalendarIcon />, path: '/calendar' },
         { text: 'Payouts', icon: <MoneyIcon />, path: '/payouts' },
         { text: 'Working Hours', icon: <WorkingHoursIcon />, path: '/working-hours' },
@@ -247,7 +245,7 @@ const Sidebar = () => {
     
     if (demoRole === 'student' || isStudent) {
       return [
-        { text: 'My Courses', icon: <BookIcon />, path: '/my-courses' },
+        { text: 'My Courses', icon: <BookIcon />, path: '/course' },
         { text: 'All Courses', icon: <SchoolIcon />, path: '/courses' },
         { text: 'Activity', icon: <BarChartIcon />, path: '/activity' },
         { text: 'Fees', icon: <MoneyIcon />, path: '/fees' },

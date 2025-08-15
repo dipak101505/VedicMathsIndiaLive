@@ -26,7 +26,7 @@ import CreditsHistoryModal from '../../../components/student/CreditsHistoryModal
 import TimelineView from '../../../components/student/TimelineView';
 import ContentView from '../../../components/student/ContentView';
 
-const CourseDetailPage = () => {
+const InstructorCourseDetailPage = () => {
   const { courseId } = useParams();
   const navigate = useNavigate();
   const [selectedTab, setSelectedTab] = useState(0);
@@ -34,7 +34,7 @@ const CourseDetailPage = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [creditsHistoryOpen, setCreditsHistoryOpen] = useState(false);
 
-  // Mock course data - this should match the data from StudentCourses
+  // Mock course data - this should match the data from InstructorCourses
   const courseData = {
     1: {
       id: 1,
@@ -265,7 +265,7 @@ const CourseDetailPage = () => {
   };
 
   const handleBackClick = () => {
-    navigate('/course');
+    navigate('/teacher/courses');
   };
 
   const handleSessionClick = (session) => {
@@ -477,7 +477,7 @@ const CourseDetailPage = () => {
               </Grid>
               <Grid item xs={4}>
                 <Box sx={{ textAlign: 'center' }}>
-                  <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'text.primary' }}>
+                  <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
                     {credits.total}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -567,4 +567,4 @@ const CourseDetailPage = () => {
   );
 };
 
-export default CourseDetailPage;
+export default InstructorCourseDetailPage;

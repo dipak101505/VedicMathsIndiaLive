@@ -63,6 +63,8 @@ export const canAccessRoute = (userRole, route) => {
   const routePermissions = {
     '/users': 'VIEW_USERS',
     '/courses': 'VIEW_COURSES',
+    '/teacher/courses': 'VIEW_COURSES',
+    '/teacher/courses/:courseId': 'VIEW_COURSES',
     '/analytics': 'VIEW_ANALYTICS',
     '/settings': 'VIEW_SETTINGS',
   };

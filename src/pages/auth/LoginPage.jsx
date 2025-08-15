@@ -41,6 +41,20 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
+  // Get the intended destination or default based on role
+  const getDefaultRoute = (userRole) => {
+    if (userRole === 'student') {
+      return '/course';
+    } else if (userRole === 'instructor') {
+      return '/teacher/courses';
+    } else if (userRole === 'admin') {
+      return '/dashboard';
+    } else if (userRole === 'parent') {
+      return '/parent-dashboard';
+    }
+    return '/dashboard'; // fallback
+  };
+  
   const from = location.state?.from?.pathname || '/dashboard';
   
   // Component lifecycle management
@@ -138,8 +152,11 @@ const LoginPage = () => {
           if (isAuthenticated && user && user.role !== 'loading') {
             clearTimeout(authTimeout);
             setIsAuthenticating(false);
-            console.log('✅ Authentication state confirmed with role:', user.role, 'navigating to:', from);
-            navigate(from, { replace: true });
+            
+            // Determine where to navigate based on intended destination or role-based default
+            const destination = from !== '/dashboard' ? from : getDefaultRoute(user.role);
+            console.log('✅ Authentication state confirmed with role:', user.role, 'navigating to:', destination);
+            navigate(destination, { replace: true });
           } else if (attempts < maxAttempts) {
             // Check again after a short delay
             setTimeout(checkAuthState, 50); // Reduced from 100ms to 50ms
@@ -165,7 +182,10 @@ const LoginPage = () => {
               console.log('🔄 Fallback: Direct navigation after role loaded:', user.role);
               clearTimeout(authTimeout);
               setIsAuthenticating(false);
-              navigate(from, { replace: true });
+              
+              // Determine where to navigate based on intended destination or role-based default
+              const destination = from !== '/dashboard' ? from : getDefaultRoute(user.role);
+              navigate(destination, { replace: true });
             }
           }
         }, 3000); // 3 second fallback
